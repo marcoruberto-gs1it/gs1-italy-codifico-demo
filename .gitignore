@@ -1,0 +1,21 @@
+# Dipendenze e build
+node_modules/
+dist/
+.angular/
+.cache/
+
+# Ambiente e segreti
+.env
+.env.*
+!.env.example
+
+# Editor e sistema
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Log
+*.log
+npm-debug.log*
