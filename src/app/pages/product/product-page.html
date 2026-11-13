@@ -1,0 +1,97 @@
+<div class="page-head">
+  <div class="identity">
+    <h1>
+      {{ store.product().gtinType }} {{ store.product().gtin }}
+      @if (!store.finalized()) {
+        <span class="draft-badge" title="Prodotto non ancora finalizzato">Bozza</span>
+      }
+    </h1>
+    <p class="subtitle">{{ store.product().description }}</p>
+  </div>
+
+  <div class="split">
+    <button
+      type="button"
+      class="btn btn-primary split-main"
+      [disabled]="!store.finalized()"
+      [attr.title]="store.finalized() ? null : 'Disponibile dopo la finalizzazione del prodotto'"
+      (click)="openWizard()"
+    >
+      Genera barcode/QR code
+    </button>
+    <button
+      type="button"
+      [disabled]="!store.finalized()"
+      class="split-toggle"
+      aria-label="Altre opzioni di generazione"
+      [attr.aria-expanded]="splitOpen()"
+      (click)="toggleSplit($event)"
+    >
+      <app-icon name="chevron-down" [size]="16" [stroke]="2.2" />
+    </button>
+    @if (splitOpen()) {
+      <ul class="split-menu" role="menu">
+        <li>
+          <button type="button" role="menuitem" (click)="openWizard('linear')">
+            <app-icon name="barcode" [size]="18" /> Barcode lineare EAN-13
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            role="menuitem"
+            [disabled]="!store.activeLinks().length"
+            [attr.title]="store.activeLinks().length ? null : 'Crea almeno un GS1 Digital Link per scaricare il QR code'"
+            (click)="openWizard('qr')"
+          >
+            <app-icon name="qrcode" [size]="18" /> QR Code GS1 Digital Link
+            @if (!store.activeLinks().length) {
+              <span class="menu-hint">Crea prima un GS1 Digital Link</span>
+            }
+          </button>
+        </li>
+      </ul>
+    }
+  </div>
+
+  <nav class="tabs" aria-label="Sezioni del prodotto">
+    @for (t of tabs(); track t.id) {
+      <a
+        class="tab"
+        [class.active]="activeTab() === t.id"
+        [routerLink]="['/prodotti', store.product().gtin, t.id]"
+        [attr.aria-current]="activeTab() === t.id ? 'page' : null"
+        >{{ t.label }}
+        @if (t.id === 'digital-link' && showNewTag()) {
+          <span class="tab-new">Nuovo</span>
+        }</a
+      >
+    }
+  </nav>
+</div>
+
+<div class="page-body">
+  <div class="layout">
+    <div class="main-col">
+      @switch (activeTab()) {
+        @case ('base') {
+          <app-base-tab />
+        }
+        @case ('ecologicamente') {
+          <app-eco-tab />
+        }
+        @case ('brindo') {
+          <app-brindo-tab />
+        }
+        @default {
+          <app-digital-link-tab />
+        }
+      }
+    </div>
+    <app-product-sidebar class="side-col" />
+  </div>
+</div>
+
+@if (wizardOpen()) {
+  <app-barcode-wizard [initialKind]="wizardKind()" (closed)="wizardOpen.set(false)" />
+}

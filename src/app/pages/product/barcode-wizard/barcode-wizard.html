@@ -1,0 +1,167 @@
+<app-modal [title]="'Genera barcode/QR code - passo ' + step() + ' di 3'" (closed)="closed.emit()">
+  <ol class="stepper" aria-label="Avanzamento">
+    @for (s of steps; track s.n) {
+      <li [class.current]="step() === s.n" [class.done]="step() > s.n" [attr.aria-current]="step() === s.n ? 'step' : null">
+        <span class="dot">
+          @if (step() > s.n) {
+            ✓
+          } @else {
+            {{ s.n }}
+          }
+        </span>
+        <span class="step-label">{{ s.label }}</span>
+      </li>
+    }
+  </ol>
+
+  @switch (step()) {
+    @case (1) {
+      <section class="step" aria-labelledby="q1">
+        <h3 id="q1" class="question">Che tipo di barcode preferisci scaricare?</h3>
+        <div class="choices" role="radiogroup" aria-labelledby="q1">
+          <button type="button" role="radio" class="choice" [class.on]="kind() === 'linear'" [attr.aria-checked]="kind() === 'linear'" (click)="kind.set('linear')">
+            <app-icon name="barcode" [size]="30" [stroke]="1.5" class="choice-icon" />
+            <span>
+              <span class="choice-title">Barcode Lineare</span>
+              <span class="choice-sub">Solo GTIN, per lettori laser di cassa</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            role="radio"
+            class="choice"
+            [class.on]="kind() === 'qr'"
+            [attr.aria-checked]="kind() === 'qr'"
+            [disabled]="!qrAvailable()"
+            [attr.aria-describedby]="qrAvailable() ? null : 'qr-locked'"
+            (click)="kind.set('qr')"
+          >
+            <app-icon name="qrcode" [size]="30" [stroke]="1.5" class="choice-icon" />
+            <span>
+              <span class="choice-title">QR Code Digital Link</span>
+              <span class="choice-sub">Leggibile da fotocamera smartphone</span>
+            </span>
+            @if (!qrAvailable()) {
+              <app-icon name="lock" [size]="16" [stroke]="2" class="choice-lock" />
+            }
+          </button>
+        </div>
+        @if (!qrAvailable()) {
+          <p class="qr-locked" id="qr-locked">
+            <app-icon name="info" [size]="16" [stroke]="1.8" />
+            <span>
+              Il QR code GS1 Digital Link si può scaricare solo dopo aver creato almeno un link per questo prodotto: senza link non
+              porterebbe a nessuna pagina scelta da te.
+              <button type="button" class="inline-link" (click)="goToDigitalLink()">Crea il GS1 Digital Link</button>
+            </span>
+          </p>
+        }
+        <div class="nav end">
+          <button type="button" class="btn btn-primary btn-lg" [disabled]="!kind()" (click)="next()">Avanti</button>
+        </div>
+      </section>
+    }
+
+    @case (2) {
+      <section class="step">
+        @if (kind() === 'qr') {
+          <label class="question" for="wz-content">Che informazione vuoi codificare?</label>
+          <div class="select big">
+            <select id="wz-content" (change)="cpv.set($any($event.target).value)">
+              @if (cpv() === null) {
+                <option value="" disabled selected hidden>Seleziona cosa codificare</option>
+              }
+              <option value="" [selected]="cpv() === ''">Solo GTIN - {{ gtin14() }}</option>
+              @for (v of p().variants; track v.cpv) {
+                <option [value]="v.cpv" [selected]="cpv() === v.cpv">{{ variantOptionLabel(v) }}</option>
+              }
+            </select>
+          </div>
+
+          @if (variant(); as v) {
+            <dl class="variant">
+              <div><dt>Variante:</dt><dd>{{ v.cpv }}</dd></div>
+              <div><dt>Prodotto/Venduto/Imbottigliato da:</dt><dd>{{ v.producer }}</dd></div>
+              <div><dt>Annata:</dt><dd>{{ v.vintage }}</dd></div>
+              <div><dt>Gradazione alcolica:</dt><dd>{{ v.abv }}</dd></div>
+            </dl>
+          }
+        } @else {
+          <h3 class="question">Anteprima del barcode</h3>
+        }
+
+        @if (kind() === 'qr' && cpv() === null) {
+          <p class="choose-hint">Scegli cosa codificare: per i prodotti Brindo non c’è una scelta predefinita.</p>
+        } @else {
+        <div class="preview">
+          <div class="tile" [class.wide]="kind() === 'linear'">
+            <app-symbol-view [drawing]="drawing()" [label]="contentLabel()" />
+          </div>
+          <div class="preview-text">
+            <span class="eyebrow">Contenuto codificato</span>
+            @if (kind() === 'qr') {
+              <p class="encoded">{{ uri() }}</p>
+            } @else {
+              <p class="encoded">{{ p().gtin }}</p>
+            }
+            <p class="encoded-label">{{ contentLabel() }}</p>
+            @if (kind() === 'qr') {
+              <label class="check">
+                <input type="checkbox" [checked]="hri()" (change)="hri.set($any($event.target).checked)" />
+                <span class="box" aria-hidden="true">✓</span>
+                Mostra informazioni in chiaro (HRI)
+              </label>
+            }
+          </div>
+        </div>
+
+        @if (kind() === 'qr') {
+          <ul class="qr-notes">
+            <li>
+              Chi scansiona passa dal resolver di GS1 Italy (<code>{{ resolverHost }}</code>) e arriva a
+              <strong>{{ destination() }}</strong>.
+            </li>
+            <li>QR code statico: contiene solo il GTIN{{ cpv() ? ' e la variante' : '' }}; lotto, scadenza e numero di serie non sono inclusi.</li>
+          </ul>
+        }
+        }
+        <div class="nav">
+          <button type="button" class="btn btn-secondary btn-lg" (click)="back()">Indietro</button>
+          <button type="button" class="btn btn-primary btn-lg" [disabled]="!canContinue()" (click)="next()">Avanti</button>
+        </div>
+      </section>
+    }
+
+    @case (3) {
+      <section class="step" aria-labelledby="q3">
+        <h3 id="q3" class="question">Che tipo di formato preferisci scaricare?</h3>
+        <div class="choices formats" role="radiogroup" aria-labelledby="q3">
+          <button type="button" role="radio" class="choice small" [class.on]="format() === 'eps'" [attr.aria-checked]="format() === 'eps'" (click)="format.set('eps')">
+            <span class="choice-title">EPS</span>
+          </button>
+          <button type="button" role="radio" class="choice small" [class.on]="format() === 'pdf'" [attr.aria-checked]="format() === 'pdf'" (click)="format.set('pdf')">
+            <span class="choice-title">PDF</span>
+          </button>
+        </div>
+        @if (brindoWarning()) {
+          <p class="brindo-warning" role="alert">
+            <strong>Attenzione:</strong> questo QR non contiene la variante Brindo: non utilizzarlo sull’etichetta della bottiglia.
+          </p>
+        }
+        <p class="disclaimer">
+          Le immagini dei codici a barre per i tuoi prodotti sono costruite rispettando le specifiche GS1. Per una stampa corretta e
+          leggibile del codice ti suggeriamo di leggere
+          <a href="https://gs1it.org" target="_blank" rel="noopener">queste raccomandazioni</a>. GS1 Italy non risponde di eventuali
+          modifiche da parte di terze parti (utente, grafico, stampatore), che possono compromettere i parametri di correttezza e
+          leggibilità del codice a barre.
+        </p>
+        <div class="nav">
+          <button type="button" class="btn btn-secondary btn-lg" (click)="back()">Indietro</button>
+          <button type="button" class="btn btn-primary btn-lg" [disabled]="!format()" (click)="download()">
+            <app-icon name="download" [size]="17" [stroke]="2" /> Scarica
+          </button>
+        </div>
+      </section>
+    }
+  }
+</app-modal>

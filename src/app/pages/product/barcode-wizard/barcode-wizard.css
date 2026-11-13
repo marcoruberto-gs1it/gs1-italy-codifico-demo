@@ -1,0 +1,414 @@
+/* Misure dal Figma (Frame 33-56) riportate a 1x. */
+
+.stepper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0 0 26px;
+  padding: 0 60px;
+  list-style: none;
+}
+
+.stepper li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Filetto fra un cerchio e il successivo. */
+.stepper li + li::before {
+  content: '';
+  position: absolute;
+  top: 31px;
+  right: calc(50% + 40px);
+  width: calc(100% - 80px);
+  height: 1px;
+  background: #bdbdbd;
+  transition: background-color 0.3s;
+}
+
+.stepper li.done + li::before,
+.stepper li.current:not(:first-child)::before {
+  background: var(--gs1-blue);
+}
+
+.dot {
+  display: grid;
+  place-items: center;
+  width: 63px;
+  height: 63px;
+  border-radius: 50%;
+  border: 1px solid #bdbdbd;
+  background: #fff;
+  color: #9aa3ab;
+  font-size: 20px;
+  font-weight: 500;
+  transition:
+    background-color 0.3s,
+    color 0.3s,
+    border-color 0.3s,
+    transform 0.3s var(--ease);
+}
+
+.current .dot {
+  background: var(--gs1-orange);
+  border-color: var(--gs1-orange);
+  color: #fff;
+  transform: scale(1.04);
+}
+
+.done .dot {
+  background: var(--gs1-blue);
+  border-color: var(--gs1-blue);
+  color: #fff;
+}
+
+.step-label {
+  color: #9aa3ab;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.current .step-label,
+.done .step-label {
+  color: var(--gs1-blue);
+}
+
+.step {
+  animation: step-in 0.3s var(--ease);
+}
+
+.question {
+  display: block;
+  margin: 0 0 8px;
+  color: var(--gs1-blue-text);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ---- Scelte (tipologia, formato) ------------------------------------------------------- */
+
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 34px;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 97px;
+  padding: 10px 22px;
+  border: 1px solid #dcdcdc;
+  background: var(--surface-input);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.choice:hover {
+  border-color: var(--gs1-blue-text);
+}
+
+.choice.on {
+  border-color: var(--gs1-orange);
+  background: #fff6f2;
+  box-shadow: inset 0 0 0 1px var(--gs1-orange);
+}
+
+.choice-icon {
+  color: var(--gs1-blue);
+}
+
+.choice.on .choice-icon {
+  color: var(--gs1-orange);
+}
+
+.choice-title {
+  display: block;
+  color: var(--text-strong);
+  font-size: 21px;
+  font-weight: 500;
+}
+
+.choice-sub {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.choice.small {
+  min-height: 51px;
+  padding: 0 38px;
+}
+
+.formats {
+  gap: 22px;
+  margin-right: 42px;
+}
+
+/* ---- Anteprima ------------------------------------------------------------------------------ */
+
+.select.big select {
+  height: 65px;
+  padding-left: 18px;
+  background: var(--surface-input);
+  border-color: #dcdcdc;
+  font-size: 15px;
+}
+
+.variant {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 8px 0;
+  margin: 14px 0 0;
+}
+
+.variant > div {
+  display: flex;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.variant dt {
+  color: var(--text-strong);
+  font-weight: 500;
+}
+
+.variant dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 22px;
+  padding: 14px 18px;
+  min-height: 211px;
+  background: var(--surface-input);
+  border: 1px solid #e3e3e3;
+}
+
+.tile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 180px;
+  min-height: 182px;
+  padding: 18px;
+  background: #fff;
+  border: 1px solid #e3e3e3;
+}
+
+.tile.wide {
+  width: 287px;
+}
+
+.tile app-symbol-view {
+  width: 100%;
+}
+
+.eyebrow {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.encoded {
+  margin-top: 4px;
+  color: #323232;
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+
+.encoded-label {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.check {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  color: var(--text-strong);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.check input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.box {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #9aa3ab;
+  background: #fff;
+  color: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.check input:checked + .box {
+  background: var(--gs1-blue);
+  border-color: var(--gs1-blue);
+  color: #fff;
+}
+
+.check input:focus-visible + .box {
+  outline: 2px solid var(--gs1-link);
+  outline-offset: 2px;
+}
+
+.choose-hint {
+  margin-top: 22px;
+  padding: 26px;
+  background: var(--surface-input);
+  border: 1px dashed #c9d3de;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.qr-notes {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  color: #4a5560;
+  font-size: 13px;
+}
+
+.qr-notes li + li {
+  margin-top: 4px;
+}
+
+.qr-notes code {
+  font-family: Consolas, 'Courier New', monospace;
+  color: var(--gs1-blue);
+}
+
+.qr-notes strong {
+  color: var(--gs1-blue-text);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.brindo-warning {
+  margin-top: 22px;
+  padding: 12px 16px;
+  background: #fff3cd;
+  border-left: 4px solid #e0a800;
+  color: #5c4500;
+  font-size: 14px;
+}
+
+/* ---- Formato e navigazione --------------------------------------------------------------- */
+
+.disclaimer {
+  margin-top: 36px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+}
+
+.nav.end {
+  justify-content: flex-end;
+  margin-top: 82px;
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+}
+
+@media (max-width: 760px) {
+  .stepper {
+    padding: 0;
+  }
+  .choices {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .formats {
+    margin-right: 0;
+  }
+  .preview {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .variant {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- QR non disponibile senza link creati dall'azienda ------------------------------------- */
+
+.choice:disabled {
+  position: relative;
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.choice:disabled:hover {
+  border-color: #dcdcdc;
+}
+
+.choice-lock {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.qr-locked {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #eef3f9;
+  border-left: 3px solid #1a467b;
+  color: #3b4248;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.qr-locked app-icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--gs1-blue);
+}
+
+.inline-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gs1-blue-text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}

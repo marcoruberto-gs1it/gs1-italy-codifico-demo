@@ -1,0 +1,133 @@
+<section class="card block">
+  <h2 class="card-title">Informazioni generali</h2>
+  <dl class="kv">
+    <dt>Descrizione</dt>
+    <dd>
+      <span class="lang-row"><span class="lang">Italiano</span> {{ p().description }}</span>
+      <span class="lang-row"><span class="lang">Inglese</span> {{ p().description }}</span>
+    </dd>
+    <dt>Formato</dt>
+    <dd>{{ p().netContent }}</dd>
+    <dt>Denominazione di vendita</dt>
+    <dd>{{ p().salesName }}</dd>
+    <dt>Origine</dt>
+    <dd>{{ p().origin }}</dd>
+    <dt>Loghi e certificazioni</dt>
+    <dd>
+      <ul>
+        @for (c of p().certifications; track c) {
+          <li>{{ c }}</li>
+        }
+      </ul>
+    </dd>
+    <dt>Consumo responsabile</dt>
+    <dd>
+      <ul>
+        @for (r of p().responsibleDrinking; track r) {
+          <li>{{ r }}</li>
+        }
+      </ul>
+    </dd>
+  </dl>
+</section>
+
+<section class="card block detail">
+  <div class="detail-head">
+    <h2 class="card-title">Informazioni di dettaglio</h2>
+    <label class="variant-picker">
+      <span>Variante:</span>
+      <span class="select">
+        <select (change)="cpv.set($any($event.target).value)" aria-label="Variante">
+          @for (v of p().variants; track v.cpv) {
+            <option [value]="v.cpv" [selected]="v.cpv === cpv()">{{ v.vintage }} – {{ v.producer }}</option>
+          }
+        </select>
+      </span>
+    </label>
+  </div>
+
+  <div class="inner">
+    <div class="link-row">
+      <div class="url-box">
+        <p class="url">{{ uri() }}</p>
+        <p class="url-sub">Generato automaticamente dal servizio Brindo</p>
+      </div>
+      <div class="qr-card">
+        <app-symbol-view class="qr" [drawing]="qr()" label="QR Code GS1 Digital Link della variante" />
+        <span>
+          <span class="qr-title">QR Code Standard GS1</span>
+          <span class="qr-sub">Scansiona e controlla esattamente cosa i consumatori vedranno con l’anteprima</span>
+        </span>
+      </div>
+    </div>
+
+    @let v = variant();
+    <dl class="kv kv-detail">
+      <dt>Annata</dt>
+      <dd>{{ dash(v.vintage) }}</dd>
+      <dt>Prodotto/Venduto/Imbottigliato da</dt>
+      <dd>{{ dash(v.producer) }}</dd>
+      <dt>Gradazione alcolica</dt>
+      <dd>{{ dash(v.abv) }}</dd>
+      <dt>Contenuto zuccherino</dt>
+      <dd>{{ dash(v.sugar) }}</dd>
+      <dt>Imbottigliamento in atmosfera protettiva</dt>
+      <dd>{{ dash(v.protectiveAtmosphere) }}</dd>
+    </dl>
+
+    <h3 class="sub-title">Ingredienti</h3>
+    @if (v.ingredients) {
+      <p class="ingredients">{{ v.ingredients }}</p>
+    } @else {
+      <p class="warning"><app-icon name="alert-circle" [size]="20" /> Nessun ingrediente specificato</p>
+    }
+
+    <dl class="kv kv-detail">
+      <dt>Regolatori dell’acidità</dt>
+      <dd>{{ dash(v.acidityRegulators) }}</dd>
+      <dt>Conservanti e antiossidanti</dt>
+      <dd>{{ dash(v.preservatives) }}</dd>
+      <dt>Agenti stabilizzanti</dt>
+      <dd>{{ dash(v.stabilizers) }}</dd>
+    </dl>
+
+    <h3 class="sub-title">Dichiarazione nutrizionale</h3>
+    <dl class="kv kv-detail">
+      <dt>Volume di una porzione (ml)</dt>
+      <dd>{{ dash(v.portionMl) }}</dd>
+      <dt>Porzioni per bottiglia</dt>
+      <dd>{{ dash(v.portionsPerBottle) }}</dd>
+    </dl>
+
+    <table class="nutrition">
+      <thead>
+        <tr>
+          <th></th>
+          <th scope="col">Per 100 ml</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row" rowspan="2">Energia</th>
+          <td>{{ dash(v.energyKj) }}</td>
+        </tr>
+        <tr>
+          <td>{{ dash(v.energyKcal) }}</td>
+        </tr>
+        @for (n of v.nutrition; track n.label) {
+          <tr>
+            <th scope="row" [class.sub]="n.sub">{{ n.label }}</th>
+            <td>{{ n.value }}</td>
+          </tr>
+        } @empty {
+          @for (label of ['Grassi', 'di cui saturi', 'Carboidrati', 'di cui zuccheri', 'Proteine', 'Sale']; track label) {
+            <tr>
+              <th scope="row" [class.sub]="label.startsWith('di cui')">{{ label }}</th>
+              <td>—</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

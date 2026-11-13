@@ -1,0 +1,302 @@
+<div class="page-head">
+  <h1>Benvenuto in Codifico!</h1>
+  <p>Crea i barcode e assegnali ai tuoi prodotti.</p>
+</div>
+
+<div class="layout">
+  <div class="main-col">
+    <!-- Novità: GS1 Digital Link -->
+    <section class="news" aria-labelledby="news-title">
+      <div class="news-text">
+        <span class="news-pill">Novità</span>
+        <h2 id="news-title">Arriva il GS1 Digital Link</h2>
+        <p>
+          Un solo QR code in etichetta, tante informazioni: pagina prodotto, allergeni, sostenibilità, istruzioni d’uso, in
+          tutte le lingue. Collega i contenuti ai tuoi GTIN e decidi tu dove arriva chi scansiona.
+        </p>
+        <div class="news-actions">
+          <!-- Il GS1 Digital Link è per prodotto: si parte dall'elenco e si sceglie il prodotto. -->
+          <a class="btn btn-primary" routerLink="/prodotti">
+            Scegli un prodotto da collegare
+            <app-icon name="arrow-right" [size]="16" [stroke]="2" />
+          </a>
+          <button type="button" class="how-toggle" [attr.aria-expanded]="howOpen()" (click)="howOpen.set(!howOpen())">
+            Come funziona
+            <app-icon name="chevron-down" [size]="16" [stroke]="2" [class.flip]="howOpen()" />
+          </button>
+          <button type="button" class="how-toggle" (click)="tutorialOpen.set(true)">
+            <span class="play" aria-hidden="true">▶</span> Guarda il video
+          </button>
+          <a class="how-toggle" [href]="t.guide" [attr.download]="t.guideName">
+            <app-icon name="download" [size]="15" [stroke]="2" /> Guida PDF
+          </a>
+        </div>
+        @if (productsWithLinks()) {
+          <p class="news-status">
+            <app-icon name="check-circle" [size]="16" [stroke]="2" />
+            {{ productsWithLinks() }} {{ productsWithLinks() === 1 ? 'prodotto' : 'prodotti' }} su {{ store.products.length }}
+            con GS1 Digital Link attivo
+          </p>
+        }
+      </div>
+
+      <div class="news-visual" aria-hidden="true">
+        <!-- QR illustrativo, stile icona: non è un codice leggibile. -->
+        <div class="qr-tile">
+          <svg class="qr-icon" viewBox="0 0 120 120" role="img" aria-label="Illustrazione di un QR code">
+            <g fill="none" stroke="currentColor" stroke-width="7">
+              <rect x="10" y="10" width="30" height="30" rx="7" />
+              <rect x="80" y="10" width="30" height="30" rx="7" />
+              <rect x="10" y="80" width="30" height="30" rx="7" />
+            </g>
+            <g fill="currentColor">
+              <rect x="20" y="20" width="10" height="10" rx="2.5" />
+              <rect x="90" y="20" width="10" height="10" rx="2.5" />
+              <rect x="20" y="90" width="10" height="10" rx="2.5" />
+              <rect x="52" y="10" width="16" height="10" rx="3" />
+              <rect x="52" y="28" width="10" height="12" rx="3" />
+              <rect x="10" y="52" width="12" height="10" rx="3" />
+              <rect x="30" y="52" width="22" height="10" rx="3" />
+              <rect x="60" y="48" width="10" height="24" rx="3" />
+              <rect x="78" y="52" width="32" height="10" rx="3" />
+              <rect x="52" y="80" width="10" height="30" rx="3" />
+              <rect x="70" y="80" width="20" height="10" rx="3" />
+              <rect x="98" y="72" width="12" height="18" rx="3" />
+              <rect x="70" y="98" width="10" height="12" rx="3" />
+            </g>
+            <rect class="qr-accent" x="88" y="98" width="22" height="12" rx="3" />
+          </svg>
+        </div>
+        <svg class="rays" viewBox="0 0 70 150">
+          <path d="M2 75 C 30 75, 36 18, 68 18" />
+          <path d="M2 75 L 68 75" />
+          <path d="M2 75 C 30 75, 36 132, 68 132" />
+        </svg>
+        <ul class="targets">
+          <li><app-icon name="info" [size]="15" [stroke]="2" /> Pagina prodotto</li>
+          <li><app-icon name="alert-circle" [size]="15" [stroke]="2" /> Allergeni</li>
+          <li><app-icon name="globe" [size]="15" [stroke]="2" /> Sostenibilità</li>
+        </ul>
+      </div>
+
+      @if (howOpen()) {
+        <ol class="how">
+          <li>
+            <span class="how-n">1</span>
+            <strong>Aggiungi i link</strong>
+            <span>Dalla scheda del prodotto, tab Digital Link: scegli la tipologia GS1 e la lingua di ogni pagina.</span>
+          </li>
+          <li>
+            <span class="how-n">2</span>
+            <strong>Scegli la destinazione principale</strong>
+            <span>È la pagina di chi scansiona, salvo regole per la sua lingua.</span>
+          </li>
+          <li>
+            <span class="how-n">3</span>
+            <strong>Scarica il QR code</strong>
+            <span>Con “Genera barcode/QR code”, in EPS o PDF, pronto per l’etichetta.</span>
+          </li>
+        </ol>
+      }
+    </section>
+
+    <!-- Ultimi codici censiti -->
+    <section class="card block">
+      <h2 class="block-title">Ultimi codici censiti</h2>
+      <div class="subtabs" role="tablist">
+        <button type="button" role="tab" [attr.aria-selected]="tab() === 'products'" [class.on]="tab() === 'products'" (click)="tab.set('products')">
+          Prodotti a peso fisso
+        </button>
+        <button type="button" role="tab" [attr.aria-selected]="tab() === 'packaging'" [class.on]="tab() === 'packaging'" (click)="tab.set('packaging')">
+          Imballi
+        </button>
+      </div>
+
+      @if (tab() === 'products') {
+        <table class="recent">
+          <thead class="visually-hidden">
+            <tr>
+              <th scope="col">GTIN</th>
+              <th scope="col">Stato</th>
+              <th scope="col">Descrizione</th>
+              <th scope="col">GS1 Digital Link</th>
+              <th scope="col">Data</th>
+              <th scope="col">Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of recent; track p.gtin) {
+              <tr>
+                <td><button type="button" class="gtin" (click)="openProduct(p.gtin)">{{ p.gtin }}</button></td>
+                <td class="center">
+                  <span class="status" [class.final]="p.status === 'Finalizzato'">{{ p.status }}</span>
+                </td>
+                <td>{{ p.description }}</td>
+                <td>
+                  @if (linksFor(p.gtin); as n) {
+                    <a class="dl-chip on" [routerLink]="['/prodotti', p.gtin, 'digital-link']">
+                      <app-icon name="link" [size]="13" [stroke]="2" /> {{ n }} link
+                    </a>
+                  } @else if (isDemo(p.gtin) && p.status === 'Finalizzato') {
+                    <a class="dl-chip todo" [routerLink]="['/prodotti', p.gtin, 'digital-link']">
+                      <app-icon name="plus" [size]="12" [stroke]="2.4" /> Configura Digital Link
+                    </a>
+                  } @else {
+                    <span class="dl-chip none">—</span>
+                  }
+                </td>
+                <td class="date">{{ p.date }}</td>
+                <td class="actions">
+                  <app-product-actions-menu [gtin]="p.gtin" [status]="p.status" />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div class="block-actions">
+          <a class="btn btn-outline" routerLink="/prodotti">Vedi tutti <app-icon name="chevron-down" [size]="14" [stroke]="2" class="rot" /></a>
+          <button type="button" class="btn btn-primary" (click)="notInDemo()">Aggiungi un prodotto a peso fisso</button>
+        </div>
+      } @else {
+        <p class="empty">Nessun imballo censito. Gli imballi (GTIN-14) si creano a partire da un prodotto a peso fisso.</p>
+        <div class="block-actions">
+          <button type="button" class="btn btn-primary" (click)="notInDemo()">Crea un nuovo imballo</button>
+        </div>
+      }
+    </section>
+
+    <!-- Prefissi -->
+    <section class="card block">
+      <h2 class="block-title">Prefissi</h2>
+      <table class="prefixes">
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Prefisso</th>
+            <th scope="col">Stato</th>
+            <th scope="col">Descrizione</th>
+            <th scope="col">Utilizzo</th>
+            <th scope="col">Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (pr of prefixes; track pr.code) {
+            <tr>
+              <td class="prefix">{{ pr.code }}</td>
+              <td class="center"><span class="status active">Attivo</span></td>
+              <td class="prefix-label">{{ pr.label }} <app-icon name="pencil" [size]="13" [stroke]="2" class="edit" /></td>
+              <td class="usage">
+                <span>{{ pr.used }}/{{ pr.capacity }} EAN censiti</span>
+                <span class="meter" role="meter" [attr.aria-valuenow]="pr.used" aria-valuemin="0" [attr.aria-valuemax]="pr.capacity"
+                  ><span [style.width.%]="(pr.used / pr.capacity) * 100"></span
+                ></span>
+              </td>
+              <td class="actions">
+                <button type="button" class="row-toggle" [attr.aria-label]="'Azioni per il prefisso ' + pr.code" (click)="notInDemo()">
+                  <app-icon name="chevron-down" [size]="16" [stroke]="2" />
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Livello riempimento attributi -->
+    <section class="card chart-card" aria-labelledby="chart-title">
+      <h2 id="chart-title" class="chart-title">Livello riempimento attributi</h2>
+      <p class="chart-sub">Percentuale dei tuoi prodotti in cui l’attributo è compilato</p>
+      <div class="chart" role="list">
+        @for (a of attributes(); track a.label) {
+          <div class="row" role="listitem" [class.is-new]="a.isNew">
+            <span class="row-label">
+              {{ a.label }}
+              @if (a.isNew) {
+                <span class="new-tag">Nuovo</span>
+              }
+            </span>
+            <span
+              class="track"
+              tabindex="0"
+              [attr.aria-label]="a.label + ': ' + pct(a.value) + (a.note ? ', ' + a.note : '')"
+            >
+              <span class="bar" [style.width]="barWidth(a.value)"></span>
+              <span class="value" [style.left]="barWidth(a.value)">{{ pct(a.value) }}</span>
+              <span class="tip" role="tooltip">
+                <strong>{{ a.label }}</strong> {{ pct(a.value) }} dei prodotti
+                @if (a.note) {
+                  <br />{{ a.note }}
+                }
+              </span>
+            </span>
+          </div>
+        }
+        <div class="axis" aria-hidden="true">
+          @for (t of ticks; track t) {
+            <span [style.left.%]="t">{{ t }}%</span>
+          }
+        </div>
+      </div>
+      @if (!productsWithLinks()) {
+        <p class="chart-hint">
+          Nessun prodotto ha ancora un GS1 Digital Link.
+          <a routerLink="/prodotti">Scegli un prodotto</a>
+        </p>
+      }
+    </section>
+  </div>
+
+  <aside class="side-col">
+    <section class="card side-card">
+      <h2 class="side-title">Accesso rapido</h2>
+      <ul class="quick">
+        <li><button type="button" (click)="notInDemo()">Crea un nuovo imballo<app-icon name="chevron-down" [size]="16" [stroke]="2" class="rot" /></button></li>
+        <li><button type="button" (click)="notInDemo()">Leggi le nostre FAQ<app-icon name="chevron-down" [size]="16" [stroke]="2" class="rot" /></button></li>
+        <li><button type="button" (click)="notInDemo()">Scarica la lista dei tuoi prodotti<app-icon name="chevron-down" [size]="16" [stroke]="2" class="rot" /></button></li>
+        <li>
+          <a href="https://www.gs1.org/services/verified-by-gs1" target="_blank" rel="noopener"
+            >Verified by GS1<app-icon name="chevron-down" [size]="16" [stroke]="2" class="rot"
+          /></a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="card side-card">
+      <h2 class="side-title">Risorse utili</h2>
+      <ul class="resources">
+        <li>
+          <app-icon name="qrcode" [size]="20" [stroke]="1.8" />
+          <span><a class="res-link" [href]="t.guide" [attr.download]="t.guideName">Guida al GS1 Digital Link <span class="new-tag">Nuovo</span></a>Guida rapida in PDF: contenuti, lingue e QR code</span>
+        </li>
+        <li>
+          <app-icon name="info" [size]="20" [stroke]="1.8" />
+          <span><button type="button" (click)="notInDemo()">Help center</button>Risoluzione dei problemi e richieste</span>
+        </li>
+        <li>
+          <app-icon name="phone" [size]="20" [stroke]="1.8" />
+          <span><button type="button" (click)="tutorialOpen.set(true)">Tutorial</button>Video tutorial sul GS1 Digital Link</span>
+        </li>
+        <li>
+          <app-icon name="bulb" [size]="20" [stroke]="1.8" />
+          <span><button type="button" (click)="notInDemo()">Academy di GS1 Italy</button>Corsi gratuiti a tua disposizione su standard, soluzioni e tool di GS1</span>
+        </li>
+        <li>
+          <app-icon name="help" [size]="20" [stroke]="1.8" />
+          <span><button type="button" (click)="notInDemo()">Contatta GS1</button>Parla con un nostro operatore</span>
+        </li>
+        <li>
+          <app-icon name="link" [size]="20" [stroke]="1.8" />
+          <span><button type="button" (click)="notInDemo()">Scrivici</button>Mandaci un tuo feedback</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="card side-card academy">
+      <button type="button" class="btn btn-primary" (click)="notInDemo()">Accedi all’Academy di GS1 Italy</button>
+      <p>Corsi gratuiti a tua disposizione su standard, soluzioni e tool di GS1</p>
+    </section>
+  </aside>
+</div>
+
+@if (tutorialOpen()) {
+  <app-tutorial-modal (closed)="tutorialOpen.set(false)" />
+}

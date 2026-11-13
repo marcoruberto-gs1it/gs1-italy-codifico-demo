@@ -1,0 +1,95 @@
+<div class="company-bar">Azienda attiva: <strong>GS1 Italy</strong></div>
+
+<div class="brand-bar">
+  <a class="brand" routerLink="/dashboard" aria-label="Codifico+, vai alla dashboard">
+    <app-gs1-logo class="logo" />
+    <span class="divider" aria-hidden="true"></span>
+    <span class="product-name">Codifico+</span>
+  </a>
+
+  <div class="tools">
+    <label class="search">
+      <app-icon name="search" [size]="15" [stroke]="2.2" />
+      <span class="visually-hidden">Ricerca</span>
+      <input type="search" placeholder="Ricerca" (keydown.enter)="notInDemo()" />
+    </label>
+    <button type="button" class="tool" aria-label="Notifiche" (click)="notInDemo()">
+      <app-icon name="bell" [size]="24" />
+    </button>
+    <button type="button" class="tool" aria-label="Aiuto" (click)="notInDemo()">
+      <app-icon name="help" [size]="24" />
+    </button>
+    <button type="button" class="tool" aria-label="Impostazioni" (click)="notInDemo()">
+      <app-icon name="settings" [size]="23" />
+    </button>
+    <span class="tools-divider" aria-hidden="true"></span>
+    <div class="user">
+      <button
+        type="button"
+        class="user-button"
+        [attr.aria-expanded]="openMenu() === 'user'"
+        (click)="toggle('user', $event)"
+      >
+        <app-icon name="user" [size]="24" [stroke]="1.2" class="avatar" />
+        <span>Mario Rossi</span>
+        <app-icon name="chevron-down" [size]="16" [stroke]="2" />
+      </button>
+      @if (openMenu() === 'user') {
+        <ul class="menu menu-right" role="menu">
+          <li class="menu-caption">Demo GS1 Digital Link</li>
+          <li><button type="button" role="menuitem" (click)="loadSample()">Carica l’esempio completo</button></li>
+          <li><button type="button" role="menuitem" (click)="reset()">Ripristina la demo</button></li>
+          <li class="menu-sep" aria-hidden="true"></li>
+          <li><button type="button" role="menuitem" (click)="notInDemo(); openMenu.set(null)">Profilo</button></li>
+          <li><button type="button" role="menuitem" (click)="notInDemo(); openMenu.set(null)">Esci</button></li>
+        </ul>
+      }
+    </div>
+  </div>
+</div>
+
+<nav class="main-nav" aria-label="Menu principale">
+  <ul>
+    @for (entry of nav; track entry.label) {
+      <li class="nav-item">
+        @if (entry.items) {
+          <button
+            type="button"
+            class="nav-link"
+            [class.open]="openMenu() === entry.label"
+            [attr.aria-expanded]="openMenu() === entry.label"
+            (click)="toggle(entry.label, $event)"
+          >
+            {{ entry.label }}
+            <app-icon name="chevron-down" [size]="16" [stroke]="2" />
+          </button>
+          @if (openMenu() === entry.label) {
+            <ul class="menu nav-menu" role="menu">
+              @for (item of entry.items; track item.label) {
+                @if (item.caption) {
+                  <li class="menu-group" role="presentation">{{ item.label }}</li>
+                } @else {
+                  <li>
+                    <button type="button" role="menuitem" (click)="go(item)">
+                      @if (item.create) {
+                        <span class="plus" aria-hidden="true">+</span>
+                      }
+                      {{ item.label }}
+                      @if (item.submenu) {
+                        <app-icon name="chevron-down" [size]="14" [stroke]="2.2" class="sub-arrow" />
+                      }
+                    </button>
+                  </li>
+                }
+              }
+            </ul>
+          }
+        } @else if (entry.route) {
+          <a class="nav-link" [routerLink]="entry.route">{{ entry.label }}</a>
+        } @else {
+          <button type="button" class="nav-link" (click)="go(entry)">{{ entry.label }}</button>
+        }
+      </li>
+    }
+  </ul>
+</nav>

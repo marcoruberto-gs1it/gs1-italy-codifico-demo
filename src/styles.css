@@ -1,0 +1,241 @@
+@import '@fontsource/montserrat/400.css';
+@import '@fontsource/montserrat/500.css';
+@import '@fontsource/montserrat/600.css';
+@import '@fontsource/montserrat/700.css';
+
+/*
+ * Token grafici ricavati dal Figma "GS1 Digital Link - Codifico" (colori campionati sulle
+ * schermate, misure a 1x di un layout a 1920 px). Montserrat sostituisce il carattere
+ * geometrico di Codifico+.
+ */
+:root {
+  --gs1-blue: #002c6c;
+  --gs1-blue-text: #084487;
+  --gs1-orange: #f26334;
+  --gs1-orange-hover: #d9531f;
+  --gs1-orange-soft: #f8b9a3;
+  --gs1-link: #018dbd;
+  --gs1-green: #85cb4a;
+  --gs1-green-dark: #3f8a2a;
+  --gs1-red: #d22630;
+
+  --text: #4a4545;
+  --text-strong: #1f1f1f;
+  --muted: #7d8c99;
+  --page-bg: #f4f4f4;
+  --surface: #ffffff;
+  --surface-input: #f4f4f4;
+  --url-box: #eef3f9;
+  --url-box-border: #b9cbe2;
+  --border: #c4c6c6;
+  --border-soft: #dadcdc;
+  --rule: #bdc4cc;
+
+  --font: 'Montserrat', 'Segoe UI', Verdana, Arial, sans-serif;
+  --shadow-modal: 0 18px 50px rgb(0 20 50 / 0.28);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--page-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--gs1-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gs1-link);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- Pulsanti ---------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--gs1-orange);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--gs1-orange-hover);
+}
+
+.btn-primary:disabled {
+  background: var(--gs1-orange-soft);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--gs1-blue);
+  box-shadow: inset 0 0 0 1px var(--gs1-blue);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #eef3f9;
+}
+
+.btn-lg {
+  min-height: 53px;
+  min-width: 148px;
+  font-size: 15px;
+}
+
+.btn-icon {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: #444;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background-color 0.15s;
+}
+
+.btn-icon:hover {
+  border-color: var(--gs1-blue);
+  color: var(--gs1-blue);
+  background: #f6f9fc;
+}
+
+.btn-icon.danger:hover {
+  border-color: var(--gs1-red);
+  color: var(--gs1-red);
+  background: #fdf4f4;
+}
+
+/* ---- Card e campi ------------------------------------------------------------------------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.card-title {
+  color: var(--gs1-blue-text);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--gs1-blue-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.select {
+  position: relative;
+}
+
+.select select {
+  appearance: none;
+  width: 100%;
+  border: 1px solid var(--border-soft);
+  background: #fff;
+  padding: 0 44px 0 14px;
+  height: 44px;
+  font-size: 13px;
+  color: var(--text-strong);
+  cursor: pointer;
+}
+
+.select::after {
+  content: '';
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #222;
+  border-bottom: 2px solid #222;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.select select:focus-visible {
+  outline: none;
+  border-color: var(--gs1-link);
+  box-shadow: 0 0 0 3px rgb(1 141 189 / 0.18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

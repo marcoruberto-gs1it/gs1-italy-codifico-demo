@@ -1,0 +1,218 @@
+:host {
+  display: block;
+  padding-bottom: 32px;
+}
+
+.page-head {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  padding: 18px 15px 0;
+}
+
+h1 {
+  color: var(--gs1-blue);
+  font-size: 38px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin-top: 8px;
+  color: var(--gs1-blue);
+  font-size: 17px;
+}
+
+.split {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  margin-top: 21px;
+}
+
+.split-main {
+  min-height: 41px;
+  padding: 0 22px;
+}
+
+.split-toggle {
+  width: 41px;
+  height: 41px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #cfd1d1;
+  background: #fff;
+  color: var(--gs1-orange);
+  cursor: pointer;
+}
+
+.split-toggle:hover {
+  border-color: var(--gs1-orange);
+}
+
+.split-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 270px;
+  margin: 0;
+  padding: 8px 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid #e0e2e2;
+  box-shadow: 0 12px 30px rgb(0 20 50 / 0.16);
+}
+
+.split-menu button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 18px;
+  border: 0;
+  background: none;
+  color: var(--gs1-blue);
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.split-menu button:hover:not(:disabled) {
+  background: #f1f5fa;
+}
+
+.split-menu button:disabled {
+  flex-wrap: wrap;
+  color: #9aa4ad;
+  cursor: not-allowed;
+}
+
+.menu-hint {
+  flex-basis: 100%;
+  padding-left: 30px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tabs {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-end;
+  margin: 28px 0 -1px 0;
+  padding-left: 22px;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 46px;
+  padding: 0 18px;
+  color: var(--gs1-link);
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none !important;
+  border-top: 3px solid transparent;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.tab:hover {
+  color: var(--gs1-blue);
+}
+
+.tab.active {
+  padding: 0 36px 0 34px;
+  background: #fff;
+  color: var(--gs1-blue);
+  font-size: 15px;
+  font-weight: 600;
+  border-top-color: var(--gs1-orange);
+  z-index: 1;
+}
+
+.page-body {
+  margin: 0 15px;
+  background: #fff;
+  border: 1px solid var(--border);
+  min-height: 1600px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 438px;
+  gap: 25px;
+  align-items: start;
+  padding: 22px 21px 30px 37px;
+}
+
+.main-col {
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .page-head {
+    grid-template-columns: 1fr;
+  }
+  h1 {
+    font-size: 28px;
+  }
+  .split {
+    margin-top: 16px;
+  }
+  .tabs {
+    overflow-x: auto;
+    padding-left: 0;
+  }
+  .page-body {
+    margin: 0;
+  }
+}
+
+/* ---- Prodotto in bozza: niente Digital Link né QR (specifica §4.1, §5) -------------------- */
+
+.draft-badge {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: #0f6fb5;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.split-main:disabled,
+.split-toggle:disabled {
+  background: var(--gs1-orange-soft);
+  color: #fff;
+  cursor: not-allowed;
+}
+
+/* Etichetta "Nuovo" sulla tab Digital Link, finché l'utente non l'apre. */
+.tab-new {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--gs1-orange);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}

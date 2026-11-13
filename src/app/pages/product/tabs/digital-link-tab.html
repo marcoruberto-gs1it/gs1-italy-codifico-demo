@@ -1,0 +1,255 @@
+<!--
+  Tab "Digital Link" (specifica tecnica v2.4, §4.1): URL Base, Destinazione Principale, tabella
+  dei link (Tipologia, URL, Lingua, Attivo, azioni Modifica/Disattiva) e "Aggiungi Link".
+  I link generati da Brindo (uno per annata, /01/{gtin}/22/{variante}) compaiono in tabella con
+  la dicitura "Generato automaticamente dal servizio Brindo", senza azioni.
+  L'eliminazione è sempre una disattivazione logica: il link resta in tabella come disattivato.
+-->
+@if (store.links().length === 0) {
+  <section class="card empty">
+    <h2>Nessun Link ancora creato</h2>
+    <p>
+      Il GS1 Digital Link permette di raccogliere e gestire in modo organico tutti i link associati a questo prodotto: pagina
+      informazioni, sostenibilità, istruzioni d’uso e altro.
+    </p>
+    @if (brindoRows().length) {
+      <p class="empty-note">
+        <app-icon name="info" [size]="16" [stroke]="1.8" />
+        <span>
+          I {{ brindoRows().length }} link qui sotto li genera Brindo, uno per annata, e valgono solo per i QR code delle annate.
+          Finché non aggiungi un link tuo, chi scansiona il QR code con il solo GTIN vede la scheda del prodotto sul GS1 Registry
+          Platform.
+        </span>
+      </p>
+    }
+    <button type="button" class="btn btn-primary add" (click)="editing.set('new')">
+      <app-icon name="plus" [size]="14" [stroke]="2.6" /> Aggiungi Link
+    </button>
+    <app-tutorial-links class="help" (watch)="tutorialOpen.set(true)" />
+  </section>
+
+  @if (brindoRows().length) {
+    <section class="card generated-card">
+      <h2 class="card-title">Link generati automaticamente dal servizio Brindo</h2>
+      <p class="default-help">
+        Uno per annata, con il codice variante (AI 22) dopo il GTIN. Li vedi qui, ma si gestiscono nella
+        <a [routerLink]="['/prodotti', store.product().gtin, 'brindo']">tab Brindo</a>.
+      </p>
+      <table>
+        <tbody>
+          @for (g of brindoRows(); track g.url) {
+            <ng-container *ngTemplateOutlet="generatedRow; context: { $implicit: g }" />
+          }
+        </tbody>
+      </table>
+    </section>
+  }
+} @else {
+  <section class="card base">
+    <h2 class="card-title">URL Base</h2>
+    <div class="base-row">
+      <div class="url-box">
+        <span class="ai" title="AI (01): GTIN">01</span>
+        <div class="url-text">
+          <p class="url">{{ baseUri() }}</p>
+          <p class="url-sub">
+            Generato automaticamente dal sistema in base al GTIN convalidato
+            <span class="locked-inline"><app-icon name="lock" [size]="12" [stroke]="2" /> non modificabile</span>
+          </p>
+        </div>
+      </div>
+      <button type="button" class="qr-card" (click)="previewOpen.set(true)">
+        <app-symbol-view class="qr" [drawing]="qr()" label="QR Code GS1 Digital Link del prodotto" />
+        <span class="qr-text">
+          <span class="qr-title">QR Code Standard GS1</span>
+          <span class="qr-sub">Scansiona e controlla esattamente cosa i consumatori vedranno con l’anteprima</span>
+        </span>
+      </button>
+    </div>
+    <p class="base-note">
+      <app-icon name="info" [size]="16" [stroke]="1.8" />
+      <span>
+        Il QR code con l’URL base è l’<strong>indice di tutti i link</strong> del prodotto: passando dal resolver di GS1 Italy porta
+        alla Destinazione Principale o alla pagina nella lingua preferita del consumatore. È un QR code <strong>statico</strong>: contiene solo il
+        GTIN, non lotto, scadenza o numero di serie.
+        @if (brindoRows().length) {
+          Le annate Brindo hanno un QR code proprio, con il codice variante.
+        }
+      </span>
+    </p>
+  </section>
+
+  <section class="card links">
+    <div class="links-head">
+      <h2 class="card-title">Link associati al prodotto</h2>
+      <app-tutorial-links (watch)="tutorialOpen.set(true)" />
+    </div>
+
+    @if (store.activeLinks().length === 0) {
+      <div class="only-generated" role="note">
+        <app-icon name="info" [size]="18" [stroke]="1.8" />
+        <div>
+          <p class="only-generated-title">Nessun link attivo</p>
+          <p>
+            Hai disattivato tutti i tuoi link: chi scansiona il QR code con il solo GTIN vede la scheda del prodotto sul GS1
+            Registry Platform. Riattiva un link oppure aggiungine uno nuovo.
+          </p>
+        </div>
+      </div>
+    }
+
+    <label class="field-label default-label" for="default-link">Destinazione Principale</label>
+    <div class="select default-select">
+      <select
+        id="default-link"
+        [value]="store.defaultLinkId()"
+        [disabled]="!defaultOptions().length"
+        (change)="setDefault($any($event.target).value)"
+      >
+        @for (o of defaultOptions(); track o.id) {
+          <option [value]="o.id" [selected]="o.id === store.defaultLinkId()">{{ o.label }}</option>
+        } @empty {
+          <option value="" selected>Nessun link attivo</option>
+        }
+      </select>
+    </div>
+    <p class="default-help">
+      Scegli il link di atterraggio predefinito per questo prodotto.<br />
+      Tutti gli utenti verranno reindirizzati automaticamente qui, a meno che tu non abbia configurato regole specifiche per la
+      loro lingua nella tabella sottostante.
+    </p>
+
+    <div class="toolbar">
+      <button type="button" class="btn btn-primary" (click)="editing.set('new')">
+        <app-icon name="plus" [size]="13" [stroke]="2.6" /> Aggiungi Link
+      </button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th scope="col" class="col-type">Tipologia</th>
+          <th scope="col" class="col-url">URL</th>
+          <th scope="col" class="col-lang">Lingua</th>
+          <th scope="col" class="col-active">Attivo</th>
+          <th scope="col" class="col-actions"><span class="visually-hidden">Azioni</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (link of store.links(); track link.id) {
+          <tr [class.flash]="flashId() === link.id" [class.inactive]="!isActive(link)">
+            <td class="col-type">
+              <span class="type">{{ typeLabel(link.linkType) }}</span>
+              <span class="link-type">linkType={{ link.linkType }}</span>
+              @if (link.id === store.defaultLinkId()) {
+                <span class="default-badge">Destinazione principale</span>
+              }
+            </td>
+            <td class="col-url">
+              <a [href]="link.url" target="_blank" rel="noopener">{{ link.url }}</a>
+              @if (isActive(link) && !reachable(link.url)) {
+                <span class="warn-badge" title="La pagina risponde con un errore (404). Il link è salvato, ma controlla l’indirizzo.">
+                  <app-icon name="alert-circle" [size]="12" [stroke]="2" /> Risorsa non disponibile
+                </span>
+              }
+            </td>
+            <td class="col-lang">
+              {{ langLabel(link.lang) }}
+              <span class="lang-tag">{{ link.lang }}</span>
+            </td>
+            <td class="col-active">
+              @if (isActive(link)) {
+                <span class="state-chip on">Attivo</span>
+              } @else {
+                <span class="state-chip off">Disattivato</span>
+              }
+            </td>
+            <td class="col-actions">
+              @if (isActive(link)) {
+                <button type="button" class="btn-icon" [attr.aria-label]="'Modifica ' + typeLabel(link.linkType)" (click)="editing.set(link)">
+                  <app-icon name="pencil" [size]="19" [stroke]="1.4" />
+                </button>
+                <button type="button" class="btn-text" (click)="deactivating.set(link)">Disattiva</button>
+              } @else {
+                <button type="button" class="btn-text" (click)="reactivate(link)">Riattiva</button>
+              }
+            </td>
+          </tr>
+        }
+        @for (g of brindoRows(); track g.url) {
+          <ng-container *ngTemplateOutlet="generatedRow; context: { $implicit: g }" />
+        }
+      </tbody>
+    </table>
+  </section>
+}
+
+<!-- Riga di un link generato da Brindo: visibile, attivo, senza azioni (specifica §4.1). -->
+<ng-template #generatedRow let-g>
+  <tr class="generated">
+    <td class="col-type">
+      <span class="type">{{ typeLabel(g.linkType) }}</span>
+      <span class="link-type">linkType={{ g.linkType }} · /{{ g.qualifier }}</span>
+      @if (g.note) {
+        <span class="link-type">{{ g.note }}</span>
+      }
+      <span class="gen-badge"><app-icon name="lock" [size]="11" [stroke]="2.2" /> Generato automaticamente dal servizio {{ g.service }}</span>
+    </td>
+    <td class="col-url">
+      <a [href]="g.url" target="_blank" rel="noopener">{{ g.url }}</a>
+    </td>
+    <td class="col-lang">
+      {{ langLabel(g.lang) }}
+      <span class="lang-tag">{{ g.lang }}</span>
+    </td>
+    @if (store.links().length) {
+      <td class="col-active"><span class="state-chip on">Attivo</span></td>
+    }
+    <td class="col-actions">
+      <span class="locked" [title]="'Link gestito da ' + g.service + ': si modifica dal servizio'">
+        <app-icon name="lock" [size]="15" [stroke]="1.8" /> Non modificabile
+      </span>
+    </td>
+  </tr>
+</ng-template>
+
+@if (editing(); as current) {
+  <app-link-dialog
+    [link]="current === 'new' ? null : current"
+    (saved)="onSaved($event, current === 'new')"
+    (closed)="editing.set(null)"
+  />
+}
+
+@if (deactivating(); as link) {
+  <app-confirm-dialog
+    title="Disattiva link"
+    confirmLabel="Disattiva"
+    (confirmed)="confirmDeactivate()"
+    (closed)="deactivating.set(null)"
+  >
+    <p>
+      Vuoi disattivare il link <strong>{{ typeLabel(link.linkType) }}</strong> in {{ langLabel(link.lang).toLowerCase() }}?
+    </p>
+    <p class="confirm-url">{{ link.url }}</p>
+    <p>Il resolver smette di usarlo. Il link resta in tabella come disattivato e puoi riattivarlo quando vuoi.</p>
+    @if (link.id === store.defaultLinkId() && store.activeLinks().length > 1) {
+      <p class="confirm-note">
+        È la Destinazione Principale: dopo la disattivazione diventerà principale il primo link attivo rimasto nella tabella.
+      </p>
+    }
+    @if (store.activeLinks().length === 1) {
+      <p class="confirm-note">
+        È l’ultimo link attivo: il QR code tornerà a mostrare la scheda del prodotto sul GS1 Registry Platform.
+      </p>
+    }
+  </app-confirm-dialog>
+}
+
+@if (tutorialOpen()) {
+  <app-tutorial-modal (closed)="tutorialOpen.set(false)" />
+}
+
+@if (previewOpen()) {
+  <app-scan-preview (closed)="previewOpen.set(false)" />
+}

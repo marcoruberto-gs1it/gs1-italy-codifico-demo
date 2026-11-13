@@ -1,0 +1,112 @@
+<app-modal title="Anteprima della scansione" (closed)="closed.emit()" style="--modal-width: 1080px">
+  <div class="grid">
+    <div class="controls">
+      <div class="scan-source">
+        <app-symbol-view class="qr" [drawing]="qr()" label="QR Code GS1 Digital Link" />
+        <div>
+          <span class="eyebrow">Contenuto codificato</span>
+          <p class="uri">{{ baseUri() }}</p>
+        </div>
+      </div>
+
+      <span class="field-label">Lingua preferita del browser</span>
+      <div class="langs" role="radiogroup" aria-label="Lingua preferita del browser">
+        @for (l of languages(); track l.code) {
+          <button
+            type="button"
+            role="radio"
+            class="lang"
+            [title]="l.label"
+            [class.on]="lang() === l.code"
+            [attr.aria-checked]="lang() === l.code"
+            (click)="setLang(l.code)"
+          >
+            {{ l.label }} <span class="lang-code">{{ l.code }}</span>
+          </button>
+        }
+      </div>
+
+      <label class="field-label" for="sp-type">Cosa chiede l’app che scansiona</label>
+      <div class="select">
+        <select id="sp-type" (change)="setRequested($any($event.target).value)">
+          <option value="" [selected]="requested() === ''">Scansione normale (fotocamera dello smartphone)</option>
+          @for (t of availableTypes(); track t) {
+            <option [value]="t" [selected]="requested() === t">Solo “{{ typeLabel(t) }}” (linkType=gs1:{{ t }})</option>
+          }
+          @if (store.resolvableLinks().length) {
+            <option value="linkset" [selected]="requested() === 'linkset'">Tutti i link (linkType=linkset)</option>
+          }
+        </select>
+      </div>
+
+      <div class="request">
+        <span class="eyebrow">Richiesta al resolver GS1</span>
+        <code>GET {{ requestUri() }}</code>
+        <code>Accept-Language: {{ acceptLanguage() }}</code>
+      </div>
+    </div>
+
+    <div class="phone-area">
+      <div class="phone" aria-live="polite">
+        <div class="notch" aria-hidden="true"></div>
+        <div class="screen" #screen>
+            <div class="browser-bar">
+              <app-icon name="globe" [size]="12" [stroke]="2" />
+              <span>{{ requested() === 'linkset' ? resolverHost : destinationHost() }}</span>
+            </div>
+            @if (requested() === 'linkset') {
+              <div class="page linkset-page">
+                <span class="page-kicker">application/linkset+json</span>
+                <ul>
+                  @for (l of store.resolvableLinks(); track l.id) {
+                    <li>
+                      <strong>{{ typeLabel(l.linkType) }}</strong>
+                      <span>{{ langLabel(l.lang) }} · {{ l.url }}</span>
+                    </li>
+                  }
+                </ul>
+              </div>
+            } @else if (resolution().link; as link) {
+              <div class="page">
+                <span class="page-kicker">{{ store.product().brand }}</span>
+                <app-product-image class="phone-image" aria-hidden="true" />
+                <h3>{{ typeLabel(link.linkType) }}</h3>
+                <p class="page-desc">{{ store.product().description }}</p>
+                <span class="lang-chip">{{ langLabel(link.lang) }}</span>
+                <p class="page-url">{{ link.url }}</p>
+              </div>
+            } @else {
+              <div class="page registry">
+                <app-icon name="shield-check" [size]="36" class="verified" />
+                <span class="page-kicker">Scheda del prodotto</span>
+                <h3>{{ store.product().description }}</h3>
+                <p class="page-desc">{{ store.product().brand }} · GTIN {{ store.product().gtin }}</p>
+                <p class="page-url">Dati pubblicati sul GS1 Registry Platform</p>
+              </div>
+            }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="outcome">
+    <app-icon name="arrow-right" [size]="18" class="outcome-icon" />
+    <div>
+      @if (requested() === 'linkset') {
+        <strong>200 OK</strong> · il resolver restituisce l’elenco completo dei link del prodotto.
+      } @else if (resolution().link; as link) {
+        <strong>307 Temporary Redirect</strong> → <span class="loc">{{ link.url }}</span>
+      } @else {
+        <strong>Nessun link configurato</strong>
+      }
+      <p class="reason">{{ resolution().reason }}</p>
+    </div>
+  </div>
+
+  @if (store.resolvableLinks().length) {
+    <details class="json">
+      <summary>Linkset JSON del prodotto (per chi integra il resolver)</summary>
+      <pre>{{ linksetJson() }}</pre>
+    </details>
+  }
+</app-modal>

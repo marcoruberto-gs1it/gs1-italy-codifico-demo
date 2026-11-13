@@ -1,0 +1,96 @@
+WEBVTT
+
+1
+00:00:00.200 --> 00:00:07.800
+In questo video vediamo come creare e gestire il
+GS1 Digital Link di un prodotto in Codifico+.
+
+2
+00:00:08.200 --> 00:00:17.800
+Dalla home, il banner Novità presenta il GS1 Digital Link. Il pulsante
+«Scegli un prodotto da collegare» apre l’elenco dei prodotti.
+
+3
+00:00:18.200 --> 00:00:28.800
+Nell’elenco dei prodotti a peso fisso, i prodotti finalizzati senza link
+mostrano «Configura Digital Link». In questo esempio usiamo gli spaghetti.
+
+4
+00:00:29.200 --> 00:00:36.800
+Anche la scheda del prodotto segnala la novità.
+Clicchiamo «Configura il GS1 Digital Link».
+
+5
+00:00:37.200 --> 00:00:44.800
+La tab Digital Link si trova subito dopo Base. Non
+ci sono ancora link: clicchiamo «Aggiungi Link».
+
+6
+00:00:45.200 --> 00:00:55.800
+Finché il prodotto non ha almeno un link attivo, il QR code GS1 Digital
+Link non si può scaricare: è disponibile solo il codice a barre EAN-13.
+
+7
+00:00:56.200 --> 00:01:05.800
+Inseriamo l’indirizzo della pagina del prodotto. Il controllo è
+immediato: l’indirizzo deve essere sicuro e iniziare con https.
+
+8
+00:01:06.200 --> 00:01:13.800
+Scegliamo il tipo di link, qui Pagina Informazioni
+Prodotto, e la lingua della pagina. Poi salviamo.
+
+9
+00:01:14.200 --> 00:01:22.800
+Il GS1 Digital Link del prodotto è pronto. L’URL base nasce
+dal GTIN, scritto su 14 cifre, e non si può modificare.
+
+10
+00:01:23.200 --> 00:01:30.800
+Aggiungiamo la stessa pagina in inglese: chi ha il
+browser impostato in inglese vedrà questa versione.
+
+11
+00:01:31.200 --> 00:01:41.800
+Aggiungiamo anche ricette e valori nutrizionali. Ogni link si modifica
+con la matita o si disattiva con Disattiva, senza perderne traccia.
+
+12
+00:01:42.200 --> 00:01:51.800
+La Destinazione Principale è la pagina dove arriva chi scansiona
+il QR code, se non esiste un link nella sua lingua preferita.
+
+13
+00:01:52.200 --> 00:02:00.800
+Il QR code compare anche nell’anteprima dell’identità
+digitale, che si apre dalla colonna a destra della scheda.
+
+14
+00:02:01.200 --> 00:02:09.800
+Cliccando il QR code si apre l’anteprima della scansione.
+Con il browser in italiano si arriva alla pagina in italiano.
+
+15
+00:02:10.200 --> 00:02:19.800
+Con il browser in inglese britannico, il resolver di GS1 Italy
+sceglie la pagina in inglese, la lingua più vicina disponibile.
+
+16
+00:02:20.200 --> 00:02:27.800
+Per scaricare il QR code clicchiamo «Genera
+barcode/QR code» e scegliamo «QR Code Digital Link».
+
+17
+00:02:28.200 --> 00:02:36.800
+Controlliamo l’anteprima e il contenuto codificato. Sotto
+il simbolo si può stampare anche il testo in chiaro.
+
+18
+00:02:37.200 --> 00:02:43.800
+Infine scegliamo il formato, EPS o PDF: il
+file è vettoriale e pronto per l’etichetta.
+
+19
+00:02:44.200 --> 00:02:50.800
+Fatto. Per tutti i dettagli scarica la
+guida in PDF dalla home di Codifico+.

@@ -1,0 +1,330 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  animation: appear 0.35s var(--ease);
+}
+
+/* ---- Richiamo alla novità GS1 Digital Link ------------------------------------------------ */
+
+.news {
+  position: relative;
+  display: flex;
+  gap: 18px;
+  padding: 20px 22px;
+  border: 1px solid #f7c2ae;
+  border-left: 5px solid var(--gs1-orange);
+  background: #fff8f4;
+}
+
+.news-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--gs1-blue);
+  box-shadow: inset 0 0 0 1px #f2d7cb;
+}
+
+.news-kicker {
+  color: var(--gs1-orange-hover);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.news h2 {
+  margin-top: 2px;
+  color: var(--gs1-blue-text);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.news-body > p:not(.news-kicker) {
+  max-width: 660px;
+  margin-top: 6px;
+  color: #3b4248;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.news-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 20px;
+  margin-top: 14px;
+}
+
+.news-actions .btn {
+  gap: 8px;
+  text-decoration: none;
+}
+
+.news-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gs1-blue-text);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.news-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  padding: 4px 6px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.news-close:hover {
+  color: var(--text-strong);
+  text-decoration: underline;
+}
+
+/* ---- Riepilogo prodotto -------------------------------------------------------------------- */
+
+.summary {
+  padding: 30px 17px 22px;
+}
+
+.summary > .card-title {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--rule);
+  font-weight: 500;
+}
+
+.group {
+  padding: 18px 0 20px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.group.last {
+  border-bottom: 0;
+  padding-bottom: 28px;
+}
+
+.group h3 {
+  color: var(--gs1-blue-text);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: minmax(140px, 32%) 1fr;
+  gap: 9px 26px;
+  margin: 28px 0 0;
+  font-size: 13.5px;
+}
+
+.kv dt {
+  color: #4a4545;
+  text-align: right;
+}
+
+.kv dd {
+  margin: 0;
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.gpc-code {
+  margin-right: 8px;
+}
+
+.thumb {
+  display: block;
+  width: 46px;
+  height: 64px;
+  padding: 3px;
+  border: 1px solid var(--border-soft);
+  background: #fff;
+}
+
+/* Misure: tabella a tre colonne con i sottotitoli Peso e Dimensioni centrati. */
+.measures {
+  width: 100%;
+  margin-top: 26px;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.measures th,
+.measures td {
+  padding: 9px 8px;
+  border-bottom: 1px solid #e3e6e8;
+  text-align: left;
+}
+
+.measures tr.sub th {
+  padding-top: 14px;
+  text-align: center;
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.measures th[scope='row'] {
+  width: 32%;
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.measures td {
+  width: 34%;
+  color: #4a4545;
+}
+
+/* ---- Imballi ------------------------------------------------------------------------------- */
+
+.packs {
+  padding: 26px 17px 22px;
+}
+
+.packs-title {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--gs1-blue-text);
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.packs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.packs-table td {
+  padding: 9px 8px;
+  border-bottom: 1px solid #e3e6e8;
+}
+
+.pack-gtin {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gs1-blue-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pack-gtin:hover {
+  text-decoration: underline;
+}
+
+.status {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #6dbb3c;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.qty {
+  text-align: right;
+  padding-right: 10%;
+}
+
+.date {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.actions {
+  width: 52px;
+  text-align: right;
+}
+
+.row-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  border: 1px solid #c9cccc;
+  background: #fff;
+  color: var(--gs1-orange);
+  cursor: pointer;
+}
+
+.row-toggle:hover {
+  border-color: var(--gs1-orange);
+}
+
+/* ---- Richiesta aggiornamento --------------------------------------------------------------- */
+
+.update {
+  padding: 30px 17px 18px;
+  border-top: 6px solid var(--gs1-orange);
+  background: var(--gs1-blue);
+  color: #fff;
+}
+
+.update h2 {
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.35);
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.update p {
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.update a {
+  color: #7fc4f5;
+}
+
+.update .btn {
+  margin-top: 12px;
+  min-height: 36px;
+  gap: 6px;
+  padding: 0 14px;
+  background: #fff;
+  color: var(--gs1-orange);
+  font-weight: 500;
+}
+
+.rot {
+  transform: rotate(-90deg);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (max-width: 700px) {
+  .kv {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .kv dt {
+    margin-top: 8px;
+    text-align: left;
+  }
+}

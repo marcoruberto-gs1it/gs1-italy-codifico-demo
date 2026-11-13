@@ -1,0 +1,188 @@
+<div class="page-head">
+  <h1>Prodotti a peso fisso</h1>
+  <div class="head-actions">
+    <button type="button" class="btn btn-outline" (click)="notInDemo()">Importa</button>
+    <button type="button" class="btn btn-outline" (click)="exportCsv()">Esporta</button>
+    <button type="button" class="btn btn-primary" (click)="notInDemo()">Aggiungi prodotto</button>
+  </div>
+</div>
+
+<!-- Richiamo alla novità per chi non ha mai usato il GS1 Digital Link; si chiude con "Non ora". -->
+@if (showNews()) {
+  <section class="news" aria-label="Novità GS1 Digital Link">
+    <span class="news-tag">Novità</span>
+    <p>
+      <strong>GS1 Digital Link:</strong> collega al QR code dei tuoi prodotti la pagina prodotto, gli allergeni e altri contenuti.
+      {{ toConfigure() }} {{ toConfigure() === 1 ? 'prodotto finalizzato può' : 'prodotti finalizzati possono' }} averlo.
+    </p>
+    <div class="news-actions">
+      <button type="button" class="btn btn-primary" (click)="showToConfigure()">Mostra i prodotti da configurare</button>
+      <button type="button" class="news-link" (click)="tutorialOpen.set(true)">Guarda il video</button>
+      <button type="button" class="news-close" (click)="store.markDiscovery('listHintClosed')">Non ora</button>
+    </div>
+  </section>
+}
+
+@if (tutorialOpen()) {
+  <app-tutorial-modal (closed)="tutorialOpen.set(false)" />
+}
+
+<div class="panel">
+  <div class="list">
+    <div class="toolbar">
+      <label class="show">
+        Mostra
+        <span class="select small">
+          <select (change)="setPageSize($any($event.target).value)" aria-label="Elementi per pagina">
+            @for (n of [10, 20, 50]; track n) {
+              <option [value]="n" [selected]="n === pageSize()">{{ n }}</option>
+            }
+          </select>
+        </span>
+        elementi
+      </label>
+      <label class="search">
+        Cerca:
+        <input type="search" placeholder="Testo da cercare" [value]="query()" (input)="setQuery($any($event.target).value)" />
+      </label>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="col-code">
+            <button type="button" class="sort" [attr.data-dir]="sortIcon('gtin')" (click)="sortBy('gtin')">Codice prodotto</button>
+          </th>
+          <th class="col-type">Tipo</th>
+          <th class="col-status">
+            <button type="button" class="sort" [attr.data-dir]="sortIcon('status')" (click)="sortBy('status')">Stato</button>
+          </th>
+          <th class="col-desc">
+            <button type="button" class="sort" [attr.data-dir]="sortIcon('description')" (click)="sortBy('description')">Descrizione</button>
+          </th>
+          <th class="col-dl">Digital Link</th>
+          <th class="col-date">
+            <button type="button" class="sort" [attr.data-dir]="sortIcon('modified')" (click)="sortBy('modified')">Data modifica</button>
+          </th>
+          <th class="col-market">Mercato</th>
+          <th class="col-actions"><span class="visually-hidden">Azioni</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of visible(); track r.gtin) {
+          <tr>
+            <td class="col-code">
+              @if (r.status === 'Cancellato') {
+                <span class="code-off">{{ r.gtin }}</span>
+              } @else {
+                <button type="button" class="code" (click)="open(r)">{{ r.gtin }}</button>
+              }
+            </td>
+            <td class="col-type"><span class="type">{{ r.type }}</span></td>
+            <td class="col-status">
+              <span class="badge" [class]="'badge ' + r.status.toLowerCase()">{{ r.status }}</span>
+              @if (r.source !== 'Locale') {
+                <span class="badge" [class]="'badge ' + r.source.toLowerCase()">{{ r.source }}</span>
+              }
+              @if (isDemo(r.gtin)) {
+                <span class="badge demo" title="Prodotto consultabile nella demo">Demo</span>
+              }
+            </td>
+            <td class="col-desc">{{ r.description }}</td>
+            <!-- Come nella home: link attivi, oppure invito a configurare (solo prodotti finalizzati). -->
+            <td class="col-dl">
+              @if (linkCount(r.gtin); as n) {
+                <button type="button" class="dl-chip on" [title]="n + ' link GS1 Digital Link attivi'" (click)="open(r, 'digital-link')">
+                  <app-icon name="link" [size]="12" [stroke]="2" /> {{ n }} link
+                </button>
+              } @else if (r.status === 'Finalizzato') {
+                <button type="button" class="dl-chip todo" (click)="open(r, 'digital-link')">
+                  <app-icon name="plus" [size]="11" [stroke]="2.4" /> Configura Digital Link
+                </button>
+              } @else {
+                <span class="dl-chip none" [title]="r.status === 'Bozza' ? 'Disponibile dopo la finalizzazione' : ''">—</span>
+              }
+            </td>
+            <td class="col-date">{{ date(r.modified) }}</td>
+            <td class="col-market">
+              @for (m of r.markets; track m) {
+                @if (m === 'IT') {
+                  <svg class="flag" viewBox="0 0 3 2" role="img" aria-label="Italia">
+                    <rect width="1" height="2" fill="#009246" /><rect x="1" width="1" height="2" fill="#fff" /><rect x="2" width="1" height="2" fill="#ce2b37" />
+                  </svg>
+                } @else {
+                  <svg class="flag" viewBox="0 0 19 10" role="img" aria-label="Stati Uniti">
+                    <rect width="19" height="10" fill="#fff" />
+                    @for (s of [0, 2, 4, 6, 8]; track s) {
+                      <rect [attr.y]="s * 0.77" width="19" height="0.77" fill="#b22234" />
+                    }
+                    <rect width="7.6" height="5.4" fill="#3c3b6e" />
+                  </svg>
+                }
+              }
+            </td>
+            <td class="col-actions">
+              @if (r.status === 'Cancellato') {
+                <button type="button" class="btn-row" (click)="restore(r)">Ripristina</button>
+                <button type="button" class="btn-trash" aria-label="Elimina definitivamente" (click)="remove(r)">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6" />
+                  </svg>
+                </button>
+              } @else {
+                <button type="button" class="btn-row" (click)="r.status === 'Bozza' ? notInDemo() : open(r)">
+                  {{ r.status === 'Bozza' ? 'Modifica' : 'Visualizza' }}
+                </button>
+                <app-product-actions-menu [gtin]="r.gtin" [status]="r.status" />
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="empty">Nessun prodotto corrisponde alla ricerca o ai filtri.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="pager">
+      <span>
+        Elementi da {{ filtered().length ? page() * pageSize() + 1 : 0 }} a
+        {{ (page() + 1) * pageSize() > filtered().length ? filtered().length : (page() + 1) * pageSize() }} di
+        {{ filtered().length }}
+      </span>
+      <span class="pages">
+        <button type="button" [disabled]="page() === 0" (click)="page.set(page() - 1)">Precedente</button>
+        @for (p of [].constructor(pageCount()); track $index) {
+          <button type="button" class="num" [class.on]="$index === page()" (click)="page.set($index)">{{ $index + 1 }}</button>
+        }
+        <button type="button" [disabled]="page() >= pageCount() - 1" (click)="page.set(page() + 1)">Successivo</button>
+      </span>
+    </div>
+  </div>
+
+  <aside class="filters" aria-label="Filtri">
+    <div class="filters-head">
+      <span>Filtri Attivi - {{ activeFilters() }}</span>
+      <button type="button" class="clear" [disabled]="!activeFilters()" (click)="clearFilters()">Pulisci Tutto</button>
+    </div>
+    @for (g of facets(); track g.id) {
+      <h2 class="facet-title">
+        {{ g.label }}
+        @if (g.isNew) {
+          <span class="new-tag">Nuovo</span>
+        }
+      </h2>
+      <ul class="facet">
+        @for (i of g.items; track i.value) {
+          <li>
+            <button type="button" [class.on]="isOn(g.id, i.value)" [attr.aria-pressed]="isOn(g.id, i.value)" (click)="toggleFilter(g.id, i.value)">
+              {{ i.value }}
+              <span class="count">{{ i.count }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </aside>
+</div>
