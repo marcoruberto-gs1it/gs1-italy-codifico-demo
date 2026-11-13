@@ -71,12 +71,25 @@
               @if (cpv() === null) {
                 <option value="" disabled selected hidden>Seleziona cosa codificare</option>
               }
-              <option value="" [selected]="cpv() === ''">Solo GTIN - {{ gtin14() }}</option>
+              <option value="" [selected]="cpv() === ''" [disabled]="!gtinQrAvailable()">
+                Solo GTIN - {{ gtin14() }}{{ gtinQrAvailable() ? '' : ' (disponibile dopo aver creato un GS1 Digital Link)' }}
+              </option>
               @for (v of p().variants; track v.cpv) {
                 <option [value]="v.cpv" [selected]="cpv() === v.cpv">{{ variantOptionLabel(v) }}</option>
               }
             </select>
           </div>
+
+          @if (hasVariants() && !gtinQrAvailable()) {
+            <p class="qr-locked">
+              <app-icon name="info" [size]="16" [stroke]="1.8" />
+              <span>
+                Puoi già scaricare il QR code di ogni annata, con il link generato da Brindo. Il QR code con il solo GTIN sarà
+                disponibile dopo aver creato almeno un GS1 Digital Link per il prodotto.
+                <button type="button" class="inline-link" (click)="goToDigitalLink()">Crea il GS1 Digital Link</button>
+              </span>
+            </p>
+          }
 
           @if (variant(); as v) {
             <dl class="variant">

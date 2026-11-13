@@ -40,13 +40,15 @@
           <button
             type="button"
             role="menuitem"
-            [disabled]="!store.activeLinks().length"
-            [attr.title]="store.activeLinks().length ? null : 'Crea almeno un GS1 Digital Link per scaricare il QR code'"
+            [disabled]="!qrAvailable()"
+            [attr.title]="qrAvailable() ? null : 'Crea almeno un GS1 Digital Link per scaricare il QR code'"
             (click)="openWizard('qr')"
           >
             <app-icon name="qrcode" [size]="18" /> QR Code GS1 Digital Link
-            @if (!store.activeLinks().length) {
+            @if (!qrAvailable()) {
               <span class="menu-hint">Crea prima un GS1 Digital Link</span>
+            } @else if (!store.activeLinks().length) {
+              <span class="menu-hint">Per ora solo per le annate Brindo</span>
             }
           </button>
         </li>

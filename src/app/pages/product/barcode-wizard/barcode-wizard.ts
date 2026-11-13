@@ -34,10 +34,15 @@ export class BarcodeWizard {
   protected store = inject(DemoStore);
   private router = inject(Router);
   /**
-   * Il QR code GS1 Digital Link si scarica solo se l'azienda ha creato almeno un link a livello
-   * prodotto: senza, il QR porterebbe a una destinazione che l'azienda non ha scelto.
+   * QR "Solo GTIN" (/01/{gtin}): solo se l'azienda ha creato almeno un link attivo a livello
+   * prodotto, altrimenti porterebbe a una destinazione che l'azienda non ha scelto.
    */
-  protected qrAvailable = computed(() => this.store.activeLinks().length > 0);
+  protected gtinQrAvailable = computed(() => this.store.activeLinks().length > 0);
+  /**
+   * QR code disponibile: con un link a livello prodotto, oppure sui vini Brindo con annate
+   * configurate, che hanno già il proprio link generato da Brindo (/01/{gtin}/22/{variante}).
+   */
+  protected qrAvailable = computed(() => this.gtinQrAvailable() || this.store.product().variants.length > 0);
   private toasts = inject(Toasts);
   protected readonly p = this.store.product;
   protected readonly gtin14 = computed(() => toGtin14(this.p().gtin));
@@ -58,7 +63,9 @@ export class BarcodeWizard {
     const d = this.store.defaultLink();
     return d ? d.url : 'la scheda del prodotto sul GS1 Registry Platform (nessun link configurato)';
   });
-  protected canContinue = computed(() => this.step() !== 2 || this.kind() !== 'qr' || this.cpv() !== null);
+  protected canContinue = computed(
+    () => this.step() !== 2 || this.kind() !== 'qr' || (this.cpv() !== null && (this.cpv() !== '' || this.gtinQrAvailable())),
+  );
   protected hri = signal(true);
   protected format = signal<Format | null>(null);
 

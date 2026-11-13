@@ -56,6 +56,9 @@ export class ProductPage {
   /** Etichetta "Nuovo" sulla tab Digital Link finché l'utente non l'apre o non crea link. */
   protected showNewTag = computed(() => !this.store.discovery().tabSeen && this.store.productsWithLinks() === 0);
 
+  /** QR disponibile: con almeno un link a livello prodotto, o per le annate Brindo. */
+  protected qrAvailable = computed(() => this.store.activeLinks().length > 0 || this.store.product().variants.length > 0);
+
   protected wizardOpen = signal(false);
   protected wizardKind = signal<BarcodeKind | null>(null);
   protected splitOpen = signal(false);
