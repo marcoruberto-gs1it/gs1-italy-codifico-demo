@@ -34,7 +34,7 @@ export const LINK_TYPES: readonly LinkType[] = [
   { id: 'consumerHandlingStorageInfo', label: 'Conservazione e Manipolazione', description: 'Indicazioni per manipolare e conservare il prodotto in sicurezza.', availability: 'selectable' },
   { id: 'defaultLink', label: 'Link Predefinito', description: 'Il link verso cui il resolver reindirizza se la richiesta non indica altro. In Codifico+ è la Destinazione Principale.', availability: 'resolver' },
   { id: 'defaultLinkMulti', label: 'Link Predefiniti Multipli', description: 'Più link predefiniti, scelti dal resolver in base alle intestazioni della richiesta.', availability: 'resolver' },
-  { id: 'dpp', label: 'Passaporto Digitale del Prodotto (DPP)', description: 'Il passaporto digitale del prodotto.', availability: 'selectable' },
+  { id: 'dpp', label: 'Passaporto Digitale del Prodotto (DPP)', description: 'Il passaporto digitale del prodotto, dove previsto dal regolamento ESPR: non si applica ad alimenti e mangimi.', availability: 'selectable' },
   { id: 'eifu', label: "Istruzioni per l'Uso Elettroniche (eIFU)", description: "Istruzioni per l'uso in formato elettronico per i dispositivi medici.", availability: 'healthcare' },
   { id: 'epcisRepository', label: 'Repository EPCIS', description: 'Archivio EPCIS con gli eventi di visibilità della filiera.', availability: 'selectable' },
   { id: 'epil', label: 'Foglio Illustrativo Elettronico (ePIL)', description: 'Foglio illustrativo elettronico per il paziente.', availability: 'healthcare' },
@@ -85,7 +85,11 @@ export const LINK_TYPES: readonly LinkType[] = [
   { id: 'whatsInTheBox', label: 'Contenuto della Confezione', description: 'Elenco di tutti gli articoli contenuti in una confezione.', availability: 'selectable' },
 ];
 
-/** Le tipologie più usate per i prodotti di largo consumo, in cima al menu. */
+/**
+ * Le tipologie più usate per i prodotti di largo consumo, in cima al menu.
+ * Il DPP (gs1:dpp) non è tra queste: il regolamento ESPR (UE 2024/1781) esclude alimenti e
+ * mangimi, quindi resta solo nell'elenco completo, per i prodotti non alimentari.
+ */
 export const COMMON_LINK_TYPE_IDS = [
   'pip',
   'allergenInfo',
@@ -95,7 +99,6 @@ export const COMMON_LINK_TYPE_IDS = [
   'instructions',
   'recipeInfo',
   'promotion',
-  'dpp',
 ] as const;
 
 const byLabel = (a: LinkType, b: LinkType) => a.label.localeCompare(b.label, 'it');
