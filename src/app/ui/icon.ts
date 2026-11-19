@@ -22,7 +22,8 @@ export type IconName =
   | 'arrow-right'
   | 'link'
   | 'info'
-  | 'lock';
+  | 'lock'
+  | 'check';
 
 /** Icone a tratto, disegnate in SVG inline: niente font di icone da caricare. */
 @Component({
@@ -130,6 +131,9 @@ export type IconName =
         @case ('link') {
           <path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1" />
           <path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1" />
+        }
+        @case ('check') {
+          <path d="m5 12.5 4.5 4.5L19 7.5" />
         }
         @case ('lock') {
           <rect x="5" y="10.5" width="14" height="10" rx="2" />

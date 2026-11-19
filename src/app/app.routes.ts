@@ -31,6 +31,16 @@ export const routes: Routes = [
     canActivate: [selectProductGuard],
     loadComponent: () => import('./pages/product/product-page').then((m) => m.ProductPage),
   },
+  // Catalogo degli stati dei componenti: solo con ng serve, non nella build pubblicata.
+  ...(typeof ngDevMode === 'undefined' || ngDevMode
+    ? [
+        {
+          path: 'stati/tipologia-link',
+          title: 'Stati del selettore Tipologia · Codifico+',
+          loadComponent: () =>
+            import('./pages/dev/link-type-states-page').then((m) => m.LinkTypeStatesPage),
+        },
+      ]
+    : []),
   { path: '**', redirectTo: '' },
 ];
-

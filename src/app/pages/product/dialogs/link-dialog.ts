@@ -1,15 +1,25 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { DigitalLinkEntry } from '../../../core/demo-data';
 import { DemoStore } from '../../../core/demo-store';
 import { checkDestinationUrl } from '../../../core/resolver';
 import {
   LANGUAGE_GROUPS,
-  LINK_TYPE_GROUPS,
+  LINK_TYPE_OPTIONS,
+  fromLinkTypeCode,
   languageLabel,
-  linkType as findLinkType,
   linkTypeLabel,
+  toLinkTypeCode,
 } from '../../../core/vocabulary';
 import { Icon } from '../../../ui/icon';
+import { LinkTypeCombobox } from '../../../ui/link-type-combobox';
 import { Modal } from '../../../ui/modal';
 
 /**
@@ -19,14 +29,18 @@ import { Modal } from '../../../ui/modal';
  */
 @Component({
   selector: 'app-link-dialog',
-  imports: [Modal, Icon],
+  imports: [Modal, Icon, LinkTypeCombobox],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './link-dialog.css',
   template: `
     <app-modal [title]="link() ? 'Modifica Link' : 'Aggiungi nuovo Link'" (closed)="closed.emit()">
       <form (submit)="save($event)" novalidate>
         <label class="field-label" for="dl-url">URL di destinazione:</label>
-        <div class="input-wrap" [class.invalid]="showError()" [class.valid]="urlCheck().valid && url().trim()">
+        <div
+          class="input-wrap"
+          [class.invalid]="showError()"
+          [class.valid]="urlCheck().valid && url().trim()"
+        >
           <input
             id="dl-url"
             type="url"
@@ -48,7 +62,9 @@ import { Modal } from '../../../ui/modal';
           }
         </div>
         <div class="hint-row">
-          <span id="dl-url-hint" class="hint">La pagina reale a cui il QR code reindirizzerà (non l’URL codificato)</span>
+          <span id="dl-url-hint" class="hint"
+            >La pagina reale a cui il QR code reindirizzerà (non l’URL codificato)</span
+          >
           @if (showError()) {
             <span id="dl-url-error" class="error" [title]="errorReason()">URL non valido</span>
           }
@@ -57,46 +73,29 @@ import { Modal } from '../../../ui/modal';
           <p class="error-reason">{{ errorReason() }}</p>
         }
 
-        <label class="field-label" for="dl-type">Tipologia:</label>
-        <div class="select big">
-          <select id="dl-type" (change)="linkType.set($any($event.target).value)" aria-describedby="dl-type-desc">
-            <optgroup label="Più usate">
-              @for (t of typeGroups.common; track t.id) {
-                <option [value]="t.id" [selected]="t.id === linkType()">{{ t.label }}</option>
-              }
-            </optgroup>
-            <optgroup label="Tutte le tipologie GS1">
-              @for (t of typeGroups.others; track t.id) {
-                <option [value]="t.id" [selected]="t.id === linkType()">{{ t.label }}</option>
-              }
-            </optgroup>
-            <optgroup label="Riservate al settore sanitario">
-              @for (t of typeGroups.healthcare; track t.id) {
-                <option [value]="t.id" disabled>{{ t.label }}</option>
-              }
-            </optgroup>
-            <optgroup label="Non ammesse in Codifico (domini social)">
-              @for (t of typeGroups.policy; track t.id) {
-                <option [value]="t.id" disabled>{{ t.label }}</option>
-              }
-            </optgroup>
-          </select>
-        </div>
-        <p id="dl-type-desc" class="type-desc">
-          <span class="type-id">linkType=gs1:{{ linkType() }}</span> · {{ typeDescription() }}
-        </p>
+        <app-link-type-combobox
+          class="type-field"
+          [options]="typeOptions"
+          [value]="typeCode()"
+          (valueChange)="linkType.set($event ? fromCode($event) : '')"
+          [required]="true"
+        />
 
         <label class="field-label" for="dl-lang">Lingua:</label>
         <div class="select big">
           <select id="dl-lang" (change)="lang.set($any($event.target).value)">
             <optgroup label="Più usate">
               @for (l of langGroups.common; track l.code) {
-                <option [value]="l.code" [selected]="l.code === lang()">{{ l.label }} · {{ l.code }}</option>
+                <option [value]="l.code" [selected]="l.code === lang()">
+                  {{ l.label }} · {{ l.code }}
+                </option>
               }
             </optgroup>
             <optgroup label="Tutte le lingue (tag BCP 47)">
               @for (l of langGroups.others; track l.code) {
-                <option [value]="l.code" [selected]="l.code === lang()">{{ l.label }} · {{ l.code }}</option>
+                <option [value]="l.code" [selected]="l.code === lang()">
+                  {{ l.label }} · {{ l.code }}
+                </option>
               }
             </optgroup>
           </select>
@@ -104,17 +103,19 @@ import { Modal } from '../../../ui/modal';
         @if (duplicate(); as who) {
           <p class="error-reason dup">
             @if (who === 'utente') {
-              Esiste già un link “{{ typeLabel(linkType()) }}” in {{ langLabel(lang()).toLowerCase() }}: modifica quello oppure
-              scegli un’altra lingua.
+              Esiste già un link “{{ typeLabel(linkType()) }}” in
+              {{ langLabel(lang()).toLowerCase() }}: modifica quello oppure scegli un’altra lingua.
             } @else {
-              Il link “{{ typeLabel(linkType()) }}” in {{ langLabel(lang()).toLowerCase() }} è generato da {{ who }} e non si può
-              sostituire: scegli un’altra tipologia o lingua.
+              Il link “{{ typeLabel(linkType()) }}” in {{ langLabel(lang()).toLowerCase() }} è
+              generato da {{ who }} e non si può sostituire: scegli un’altra tipologia o lingua.
             }
           </p>
         }
 
         <div class="actions">
-          <button type="submit" class="btn btn-primary btn-lg" [disabled]="!canSave()">Salva</button>
+          <button type="submit" class="btn btn-primary btn-lg" [disabled]="!canSave()">
+            Salva
+          </button>
         </div>
       </form>
     </app-modal>
@@ -127,18 +128,20 @@ export class LinkDialog {
 
   private store = inject(DemoStore);
 
-  protected readonly typeGroups = LINK_TYPE_GROUPS;
+  protected readonly typeOptions = LINK_TYPE_OPTIONS;
+  protected readonly fromCode = fromLinkTypeCode;
   protected readonly langGroups = LANGUAGE_GROUPS;
   protected readonly typeLabel = linkTypeLabel;
   protected readonly langLabel = languageLabel;
 
   protected url = signal('');
-  protected linkType = signal('pip');
+  /** Id della tipologia (es. "pip"); vuoto finché l'utente non sceglie. */
+  protected linkType = signal('');
   protected lang = signal('it');
   protected touched = signal(false);
 
   protected urlCheck = computed(() => checkDestinationUrl(this.url()));
-  protected typeDescription = computed(() => findLinkType(this.linkType())?.description ?? '');
+  protected typeCode = computed(() => (this.linkType() ? toLinkTypeCode(this.linkType()) : null));
   protected errorReason = computed(() => {
     const c = this.urlCheck();
     return c.valid ? '' : c.reason;
@@ -151,9 +154,13 @@ export class LinkDialog {
   });
   /** Chi occupa già tipologia + lingua: un link dell'utente o uno generato da un servizio. */
   protected duplicate = computed(() =>
-    this.store.duplicateOf({ linkType: this.linkType(), lang: this.lang() }, this.link()?.id),
+    !this.linkType()
+      ? null
+      : this.store.duplicateOf({ linkType: this.linkType(), lang: this.lang() }, this.link()?.id),
   );
-  protected canSave = computed(() => !!this.url().trim() && this.urlCheck().valid && !this.duplicate());
+  protected canSave = computed(
+    () => !!this.url().trim() && this.urlCheck().valid && !!this.linkType() && !this.duplicate(),
+  );
 
   ngOnInit(): void {
     const l = this.link();

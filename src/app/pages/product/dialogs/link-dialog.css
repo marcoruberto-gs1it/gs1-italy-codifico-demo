@@ -102,16 +102,8 @@ form {
   height: 8px;
 }
 
-.type-desc {
-  margin-top: 6px;
-  color: #6b6f73;
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.type-id {
-  font-family: Consolas, 'Courier New', monospace;
-  color: var(--gs1-blue-text);
+.type-field {
+  margin-top: 22px;
 }
 
 .actions {
