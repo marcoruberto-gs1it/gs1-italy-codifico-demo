@@ -317,6 +317,140 @@
       </article>
     </section>
 
+    <!-- Ultimi codici censiti -->
+    <section class="card block" aria-labelledby="recent-title">
+      <h2 id="recent-title" class="block-title">Ultimi codici censiti</h2>
+      <div class="subtabs" role="tablist" aria-labelledby="recent-title" (keydown)="onTabKey($event)">
+        @for (tb of tabs; track tb.id) {
+          <button
+            type="button"
+            role="tab"
+            [id]="'tab-' + tb.id"
+            aria-controls="recent-panel"
+            [attr.aria-selected]="tab() === tb.id"
+            [attr.tabindex]="tab() === tb.id ? 0 : -1"
+            [class.on]="tab() === tb.id"
+            (click)="tab.set(tb.id)"
+          >
+            {{ tb.label }}
+          </button>
+        }
+      </div>
+
+      <div role="tabpanel" id="recent-panel" [attr.aria-labelledby]="'tab-' + tab()">
+        @switch (tab()) {
+          @case ('fixed') {
+            @if (m.recentProducts().length) {
+              <div class="table-wrap"><table class="recent">
+                <thead>
+                  <tr>
+                    <th scope="col">Codice</th>
+                    <th scope="col">Descrizione</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Stato</th>
+                    <th scope="col">Digital Link</th>
+                    <th scope="col" class="num">Modifica</th>
+                    <th scope="col"><span class="visually-hidden">Azioni</span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of m.recentProducts(); track p.gtin) {
+                    <tr>
+                      <td><button type="button" class="code" (click)="openProduct(p)">{{ p.gtin }}</button></td>
+                      <td class="desc">{{ p.description }}</td>
+                      <td><span class="badge type">GTIN-13</span></td>
+                      <td>
+                        <span class="badge" [class.final]="p.status === 'Finalizzato'" [class.draft]="p.status === 'Bozza'">{{ p.status }}</span>
+                      </td>
+                      <td>
+                        @if (p.status === 'Finalizzato') {
+                          @if (p.linkCount) {
+                            <app-tip [tipId]="'tip-dl-' + p.gtin" heading="Contenuti collegati" [lines]="p.typeLabels">
+                              <a
+                                class="dl-chip on"
+                                [routerLink]="['/prodotti', p.gtin, 'digital-link']"
+                                [attr.aria-describedby]="'tip-dl-' + p.gtin"
+                              >
+                                <app-icon name="link" [size]="13" [stroke]="2" /> DL attivo · {{ p.linkCount }} link
+                              </a>
+                            </app-tip>
+                          } @else {
+                            <a class="dl-chip todo" [routerLink]="['/prodotti', p.gtin, 'digital-link']">
+                              <app-icon name="plus" [size]="12" [stroke]="2.4" /> Configura Digital Link
+                            </a>
+                          }
+                        }
+                      </td>
+                      <td class="num">{{ date(p.modified) }}</td>
+                      <td class="actions"><app-product-actions-menu [gtin]="p.gtin" [status]="p.status" /></td>
+                    </tr>
+                  }
+                </tbody>
+              </table></div>
+            } @else {
+              <p class="empty">Nessun prodotto a peso fisso censito.</p>
+            }
+            <div class="block-actions">
+              <a routerLink="/prodotti">Vedi tutti i prodotti a peso fisso <app-icon name="arrow-right" [size]="14" [stroke]="2" /></a>
+            </div>
+          }
+          @case ('variable') {
+            <p class="empty">
+              Nessun prodotto a peso variabile censito. Servono per i prodotti venduti a peso, come salumi e formaggi al banco.
+            </p>
+            <div class="block-actions">
+              <button type="button" class="btn btn-primary" (click)="notInDemo()">Nuovo prodotto a peso variabile</button>
+            </div>
+          }
+          @case ('gln') {
+            <div class="table-wrap"><table class="recent">
+              <thead>
+                <tr>
+                  <th scope="col">Codice</th>
+                  <th scope="col">Descrizione</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">Stato</th>
+                  <th scope="col">Registro</th>
+                  <th scope="col" class="num">Modifica</th>
+                  <th scope="col"><span class="visually-hidden">Azioni</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (g of m.recentGlns(); track g.gln) {
+                  <tr>
+                    <td><button type="button" class="code" (click)="notInDemo()">{{ g.gln }}</button></td>
+                    <td class="desc">{{ g.description }}</td>
+                    <td>
+                      <app-tip [tipId]="'tip-type-' + g.gln" [text]="glnInfo[g.type]">
+                        <span class="badge type wide" tabindex="0" [attr.aria-describedby]="'tip-type-' + g.gln">{{ g.type }}</span>
+                      </app-tip>
+                    </td>
+                    <td><span class="badge final">Attivo</span></td>
+                    <td>
+                      <span class="reg" [class.on]="g.published">
+                        <app-icon [name]="g.published ? 'check-circle' : 'alert-circle'" [size]="14" [stroke]="2" />
+                        {{ g.published ? 'Pubblicato' : 'Non pubblicato' }}
+                      </span>
+                    </td>
+                    <td class="num">{{ date(g.modified) }}</td>
+                    <td class="actions">
+                      <button type="button" class="row-toggle" [attr.aria-label]="'Altre azioni per ' + g.gln" (click)="notInDemo()">
+                        <app-icon name="chevron-down" [size]="16" [stroke]="2" />
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table></div>
+            <div class="block-actions">
+              <button type="button" class="link-btn" (click)="notInDemo()">
+                Vedi tutti i GLN <app-icon name="arrow-right" [size]="14" [stroke]="2" />
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </section>
   </div>
 
 </div>
