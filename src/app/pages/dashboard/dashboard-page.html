@@ -238,7 +238,7 @@
           </div>
           <p class="stat-detail">Il più visitato: {{ s.topDescription }} ({{ num(s.topScans) }})</p>
           <div class="stat-action">
-            <button type="button" class="btn btn-secondary" (click)="showTrend()">Vedi l’andamento</button>
+            <button type="button" class="btn btn-secondary" (click)="visitsComingSoon()">Approfondisci le visite</button>
           </div>
         } @else {
           <p class="stat-main">
@@ -518,7 +518,7 @@
             </ul>
           </div>
           <div>
-            <h3 class="detail-title" id="trend-title" tabindex="-1">Andamento delle visite</h3>
+            <h3 class="detail-title" id="trend-title">Andamento delle visite</h3>
             @if (m.stats(); as s) {
               <p class="detail-sub">Visite ai contenuti giorno per giorno, ultimi 30 giorni</p>
               <app-sparkline

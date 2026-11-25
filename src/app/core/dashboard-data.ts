@@ -10,8 +10,8 @@ import { GlnType } from './gln-data';
  *
  * Lo scenario si sceglie dall'indirizzo, senza controlli in pagina: #/dashboard?scenario=a|b|c.
  * - A: azienda nuova, nessun prodotto finalizzato.
- * - B: azienda attiva con prodotti, Digital Link e GLN (predefinito).
- * - C: come B, con le statistiche di scansione disponibili.
+ * - B: azienda attiva con prodotti, Digital Link, GLN e visite ai contenuti (predefinito).
+ * - C: come B, ma senza dati sulle visite (stato "dati in arrivo").
  *
  * Solo prefissi GS1 Italy e descrizioni di fantasia: nessun dato di aziende associate.
  */
@@ -285,6 +285,21 @@ const B: Scenario = {
     { description: 'Formaggio stagionato a tranci', category: 'Formaggi', created: '2026-10-22', status: 'In verifica' },
   ],
   attributes: attributes(ACTIVE_CATALOG.length, [0.756, 0.756, 0.048, 0.601, 0.637, 0.122]),
+  // Visite ai contenuti di esempio (dati inventati).
+  stats: {
+    total: 3418,
+    deltaPct: 12,
+    topGtin: MAIN_PRODUCT.gtin,
+    topScans: 1027,
+    daily: dailySeries(3418),
+    end: '2026-11-24',
+    byContent: [
+      { label: 'Pagina prodotto', value: 1946 },
+      { label: 'Sostenibilità', value: 702 },
+      { label: 'Allergeni', value: 455 },
+      { label: 'Altri contenuti', value: 315, other: true },
+    ],
+  },
 };
 
 export const SCENARIOS: Record<ScenarioId, Scenario> = {
@@ -310,22 +325,6 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
     attributes: attributes(2, [1, 1, 0, 0.5, 0.5, 0]),
   },
   b: B,
-  c: {
-    ...B,
-    id: 'c',
-    stats: {
-      total: 3418,
-      deltaPct: 12,
-      topGtin: MAIN_PRODUCT.gtin,
-      topScans: 1027,
-      daily: dailySeries(3418),
-      end: '2026-11-24',
-      byContent: [
-        { label: 'Pagina prodotto', value: 1946 },
-        { label: 'Sostenibilità', value: 702 },
-        { label: 'Allergeni', value: 455 },
-        { label: 'Altri contenuti', value: 315, other: true },
-      ],
-    },
-  },
+  // Come B, ma senza visite: mostra lo stato "dati in arrivo".
+  c: { ...B, id: 'c', stats: undefined },
 };

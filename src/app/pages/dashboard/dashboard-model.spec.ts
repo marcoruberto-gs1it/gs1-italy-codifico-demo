@@ -88,8 +88,13 @@ describe('DashboardModel', () => {
     expect(model.stats()).toBeNull();
   });
 
-  it('scenario C: il prodotto più letto ha il Digital Link', () => {
+  it('scenario C: niente dati sulle visite', () => {
     model.scenarioId.set('c');
+    expect(model.stats()).toBeNull();
+  });
+
+  it('scenario B: visite coerenti, il prodotto più visitato ha il Digital Link', () => {
+    model.scenarioId.set('b');
     const s = model.stats()!;
     const top = model.catalog().find((p) => p.gtin === s.topGtin)!;
     expect(top.linkCount).toBeGreaterThan(0);

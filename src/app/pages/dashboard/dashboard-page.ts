@@ -156,11 +156,12 @@ export class DashboardPage {
     void this.router.navigate(['/prodotti', row.gtin, 'digital-link']);
   }
 
-  /** "Vedi l'andamento": porta al grafico nel dettaglio Digital Link. */
-  protected showTrend(): void {
-    const target = this.host.nativeElement.querySelector<HTMLElement>('#trend-title');
-    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    target?.focus({ preventScroll: true });
+  /** "Approfondisci le visite": per ora solo l'avviso che arriverà più avanti. */
+  protected visitsComingSoon(): void {
+    this.toasts.show(
+      'Gli approfondimenti sulle visite (per prodotto, contenuto e periodo) arriveranno in un prossimo rilascio.',
+      'info',
+    );
   }
 
   protected trendStart = computed(() => this.dayLabel(-((this.m.stats()?.daily.length ?? 1) - 1)));
