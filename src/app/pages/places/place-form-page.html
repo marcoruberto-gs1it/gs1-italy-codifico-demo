@@ -41,15 +41,27 @@
       @if (existing()?.type === 'Da specificare') {
         <p class="step-help">Questo GLN è stato creato senza tipo. Scegli quello giusto: i partner lo useranno di conseguenza.</p>
       }
-      <div class="type-grid">
-        @for (t of types; track t) {
-          <label class="type-card" [class.on]="type() === t">
-            <input type="radio" name="gln-type" [value]="t" [checked]="type() === t" (change)="type.set(t)" />
-            <app-icon [name]="info[t].icon" [size]="24" [stroke]="1.7" />
-            <strong>{{ t }}</strong>
-            <span>{{ info[t].short }}</span>
-            <span class="ex">Per esempio: {{ info[t].examples.join(', ') }}</span>
-          </label>
+      <div class="families">
+        @for (f of families; track f.ai) {
+          <div class="family" role="group" [attr.aria-labelledby]="'fam-' + f.ai">
+            <p class="family-head" [id]="'fam-' + f.ai">
+              <span class="ai-tag">AI {{ f.ai }}</span>
+              <strong>{{ f.label }}</strong>
+              <span class="gs1">{{ f.gs1 }}</span>
+            </p>
+            <p class="family-short">{{ f.short }}</p>
+            <div class="type-grid">
+              @for (t of f.types; track t) {
+                <label class="type-card" [class.on]="type() === t">
+                  <input type="radio" name="gln-type" [value]="t" [checked]="type() === t" (change)="type.set(t)" />
+                  <app-icon [name]="info[t].icon" [size]="24" [stroke]="1.7" />
+                  <strong>{{ t }}</strong>
+                  <span>{{ info[t].short }}</span>
+                  <span class="ex">Per esempio: {{ info[t].examples.join(', ') }}</span>
+                </label>
+              }
+            </div>
+          </div>
         }
       </div>
       @if (errors().type) {
@@ -59,6 +71,9 @@
       <p class="type-fixed">
         <app-icon [name]="info[t].icon" [size]="20" [stroke]="1.8" />
         <strong>{{ t }}</strong>
+        @if (info[t].ai; as a) {
+          <span class="ai-tag">AI {{ a }}</span>
+        }
         <span class="hint">Il tipo non si cambia dopo l’attivazione. Se ti serve un tipo diverso, crea una nuova sede o località.</span>
       </p>
     }
@@ -191,12 +206,18 @@
 
       <div class="roles" role="group" aria-labelledby="roles-title" aria-describedby="roles-hint">
         <h3 id="roles-title">Ruoli verso i partner <span class="opt">(facoltativo)</span></h3>
-        <p class="field-hint" id="roles-hint">A cosa serve questo GLN per clienti e fornitori. Puoi sceglierne più di uno.</p>
+        <p class="field-hint" id="roles-hint">
+          Con quali AI GS1 questo GLN comparirà negli ordini, nei documenti di trasporto e nelle fatture dei partner. Puoi
+          sceglierne più di uno.
+        </p>
         <div class="role-list">
-          @for (r of roles; track r) {
-            <label class="role" [class.on]="selectedRoles().includes(r)">
-              <input type="checkbox" [checked]="selectedRoles().includes(r)" (change)="toggleRole(r)" />
-              {{ r }}
+          @for (r of roles; track r.ai) {
+            <label class="role" [class.on]="selectedRoles().includes(r.ai)">
+              <input type="checkbox" [checked]="selectedRoles().includes(r.ai)" (change)="toggleRole(r.ai)" />
+              <span class="role-text">
+                <span><span class="ai-tag">AI {{ r.ai }}</span> <strong>{{ r.label }}</strong></span>
+                <span class="role-hint">{{ r.short }}</span>
+              </span>
             </label>
           }
         </div>

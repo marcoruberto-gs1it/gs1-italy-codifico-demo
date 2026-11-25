@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 import { GlnRecord, SEED_GLNS, nextGln } from './gln-data';
 
-const STORAGE_KEY = 'codifico-demo:gln:v1';
+const STORAGE_KEY = 'codifico-demo:gln:v2';
 const INTRO_KEY = 'codifico-demo:gln:intro-chiusa';
 
 /** Tempo simulato perché un GLN pubblicato diventi visibile ai partner sul registro. */

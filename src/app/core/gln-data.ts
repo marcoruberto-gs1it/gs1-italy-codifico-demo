@@ -4,75 +4,86 @@ import { checkDigit } from './gs1';
 /**
  * Sedi e località: i GLN (Global Location Number) dell'azienda.
  *
- * Nel menu e nelle pagine i GLN si chiamano per quello che identificano, come i GTIN sono
- * "Prodotti". I tipi sono in parole semplici; il termine GS1 resta visibile come riferimento
- * (gs1Term) per chi lo conosce dalla documentazione.
+ * Tipi e ruoli seguono gli Application Identifier GS1 dei GLN (https://ref.gs1.org/ai/,
+ * dataset GS1_Application_Identifiers.jsonld):
+ * - il tipo dice quale AI identifica il GLN: 417 "Party GLN" (un soggetto: l'azienda, un
+ *   reparto o una funzione) oppure 414 "Identification of a physical location" (un luogo
+ *   fisico, fisso o mobile; le sue parti interne si indicano con l'estensione AI 254);
+ * - i ruoli sono gli AI con cui il GLN compare nei documenti dei partner: 410 Ship to,
+ *   411 Bill to, 412 Purchased from, 413 Ship for, 415 Pay to, 416 Production/service location.
+ * I luoghi digitali non hanno un AI nel dataset: per ora non sono tra i tipi selezionabili.
  *
+ * Nel menu e nelle pagine i GLN si chiamano "Sedi e località", come i GTIN sono "Prodotti".
  * Dati di fantasia su un prefisso GS1 Italy: nessun dato di aziende associate.
  */
 
-export type GlnType = 'Azienda' | 'Luogo fisico' | 'Luogo mobile' | 'Luogo digitale' | 'Reparto o funzione' | 'Da specificare';
+/** AI GS1 che identificano un GLN. */
+export type GlnAi = '417' | '414';
 
-/** Tipi che si possono scegliere ("Da specificare" esiste solo per i GLN creati in passato). */
-export const GLN_TYPES: Exclude<GlnType, 'Da specificare'>[] = [
-  'Azienda',
-  'Luogo fisico',
-  'Reparto o funzione',
-  'Luogo digitale',
-  'Luogo mobile',
-];
+export const GLN_AI: Record<GlnAi, { title: string; gs1: string; label: string; short: string }> = {
+  '417': {
+    title: 'PARTY',
+    gs1: 'Party Global Location Number (GLN)',
+    label: 'Soggetto',
+    short: 'Chi: un soggetto che compra, vende, fattura o ha un ruolo nei documenti con i partner.',
+  },
+  '414': {
+    title: 'LOC No.',
+    gs1: 'Identification of a physical location - Global Location Number (GLN)',
+    label: 'Luogo fisico',
+    short: 'Dove: un luogo in cui la merce arriva, parte, viene prodotta o venduta.',
+  },
+};
+
+export type GlnType = 'Azienda' | 'Reparto o funzione' | 'Luogo fisso' | 'Luogo mobile' | 'Da specificare';
+
+/** Tipi che si possono scegliere, raggruppati per AI ("Da specificare" solo per i GLN di prima). */
+export const GLN_TYPES: Exclude<GlnType, 'Da specificare'>[] = ['Azienda', 'Reparto o funzione', 'Luogo fisso', 'Luogo mobile'];
 
 export interface GlnTypeInfo {
-  /** Termine GS1 (e in Codifico+ di oggi), per chi lo conosce. */
-  gs1Term: string;
+  /** L'AI GS1 che identifica il GLN; null se il tipo non è ancora stato indicato. */
+  ai: GlnAi | null;
   /** Una frase: che cosa identifica. */
   short: string;
   /** Esempi già in minuscolo (salvo sigle), da mettere dopo "Per esempio:". */
   examples: string[];
   icon: IconName;
-  /** L'indirizzo serve per i luoghi dove arriva o parte merce, e per l'azienda. */
+  /** L'indirizzo serve per i luoghi fissi e per l'azienda. */
   address: 'obbligatorio' | 'facoltativo' | 'non serve';
 }
 
 export const GLN_TYPE_INFO: Record<GlnType, GlnTypeInfo> = {
   Azienda: {
-    gs1Term: 'Entità legale (persona giuridica)',
+    ai: '417',
     short: 'La tua azienda come soggetto giuridico: chi compra, vende e fattura.',
     examples: ['la società', 'una consociata con partita IVA propria'],
     icon: 'building',
     address: 'obbligatorio',
   },
-  'Luogo fisico': {
-    gs1Term: 'Posizione fisica fissa',
-    short: 'Un luogo con un indirizzo, dove la merce arriva, parte o viene venduta.',
-    examples: ['magazzino', 'stabilimento', 'punto vendita', 'banchina di carico'],
-    icon: 'map-pin',
-    address: 'obbligatorio',
-  },
   'Reparto o funzione': {
-    gs1Term: 'Funzione',
+    ai: '417',
     short: 'Un ufficio o un reparto che ha un ruolo preciso verso clienti e fornitori.',
     examples: ['ufficio acquisti', 'amministrazione', 'ricezione fatture'],
     icon: 'users',
     address: 'facoltativo',
   },
-  'Luogo digitale': {
-    gs1Term: 'Posizione digitale',
-    short: 'Un indirizzo digitale a cui arrivano dati e documenti, non merce.',
-    examples: ['casella per gli ordini elettronici (EDI)', 'portale fornitori'],
-    icon: 'monitor',
-    address: 'non serve',
+  'Luogo fisso': {
+    ai: '414',
+    short: 'Un luogo con un indirizzo, dove la merce arriva, parte, viene prodotta o venduta.',
+    examples: ['magazzino', 'stabilimento', 'punto vendita'],
+    icon: 'map-pin',
+    address: 'obbligatorio',
   },
   'Luogo mobile': {
-    gs1Term: 'Posizione fisica mobile',
+    ai: '414',
     short: 'Un mezzo che si sposta e di cui serve sapere dove si trova la merce.',
     examples: ['furgone', 'container', 'nave', 'banco di un mercato'],
     icon: 'truck',
     address: 'non serve',
   },
   'Da specificare': {
-    gs1Term: 'Non specificato',
-    short: 'GLN creato prima che il tipo fosse obbligatorio: indica cosa identifica.',
+    ai: null,
+    short: 'GLN creato prima che il tipo fosse obbligatorio: indica se è un soggetto o un luogo.',
     examples: [],
     icon: 'alert-circle',
     address: 'facoltativo',
@@ -98,18 +109,34 @@ export const GLN_USES = [
   },
 ];
 
-/** Ruoli che un GLN può avere verso i partner (in parole semplici). */
+/**
+ * Ruoli verso i partner: gli AI GS1 con cui il GLN compare in ordini, documenti di trasporto,
+ * fatture ed etichette logistiche. Etichetta in parole semplici, titolo GS1 come riferimento.
+ */
 export const GLN_ROLES = [
-  'Fatturazione',
-  'Pagamenti',
-  'Ordini',
-  'Consegna merci',
-  'Ritiro merci',
-  'Produzione',
-  'Vendita al pubblico',
+  { ai: '410', label: 'Consegna merci', gs1: 'Ship to / Deliver to', short: 'Dove consegnare la merce.' },
+  { ai: '411', label: 'Fatturazione', gs1: 'Bill to / Invoice to', short: 'A chi intestare e mandare la fattura.' },
+  { ai: '412', label: 'Vendita', gs1: 'Purchased from', short: 'Da chi il cliente acquista la merce.' },
+  {
+    ai: '413',
+    label: 'Destinazione finale',
+    gs1: 'Ship for / Deliver for - Forward to',
+    short: 'Per chi è la merce dopo la consegna, ad esempio il negozio servito da un magazzino.',
+  },
+  { ai: '415', label: 'Incasso', gs1: 'Pay to (invoicing party)', short: 'Chi emette la fattura e riceve il pagamento.' },
+  {
+    ai: '416',
+    label: 'Produzione o servizio',
+    gs1: 'Production or service location',
+    short: 'Dove il prodotto viene fabbricato o il servizio viene svolto.',
+  },
 ] as const;
 
-export type GlnRole = (typeof GLN_ROLES)[number];
+export type GlnRole = (typeof GLN_ROLES)[number]['ai'];
+
+export function roleInfo(ai: GlnRole) {
+  return GLN_ROLES.find((r) => r.ai === ai)!;
+}
 
 /** Lo stato del GLN in Codifico: una sola colonna al posto di Bozza/Finalizzato + Attivo/Non attivo. */
 export type GlnStatus = 'Bozza' | 'Attivo' | 'Non attivo';
@@ -181,7 +208,7 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Via dell’Esempio 10', '20100', 'Milano', 'MI'),
-    roles: ['Fatturazione', 'Pagamenti'],
+    roles: ['411', '412', '415'],
     otherIds: [{ label: 'Codice destinatario fatture', value: 'ABC1234' }],
     created: '2024-03-12',
     modified: '2026-02-10',
@@ -189,11 +216,11 @@ export const SEED_GLNS: GlnRecord[] = [
   {
     gln: glnCode(11),
     name: 'Sede operativa di Milano',
-    type: 'Luogo fisico',
+    type: 'Luogo fisso',
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Via dell’Esempio 10', '20100', 'Milano', 'MI'),
-    roles: ['Ordini'],
+    roles: ['412'],
     parent: AZIENDA,
     otherIds: [],
     created: '2024-03-12',
@@ -202,11 +229,11 @@ export const SEED_GLNS: GlnRecord[] = [
   {
     gln: MAGAZZINO,
     name: 'Magazzino centrale',
-    type: 'Luogo fisico',
+    type: 'Luogo fisso',
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Strada Provinciale 1, km 4', '26900', 'Lodi', 'LO'),
-    roles: ['Consegna merci', 'Ritiro merci'],
+    roles: ['410'],
     parent: AZIENDA,
     otherIds: [],
     created: '2024-09-30',
@@ -215,11 +242,11 @@ export const SEED_GLNS: GlnRecord[] = [
   {
     gln: glnCode(13),
     name: 'Magazzino Sud',
-    type: 'Luogo fisico',
+    type: 'Luogo fisso',
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Via dei Trasporti 22', '70100', 'Bari', 'BA'),
-    roles: ['Consegna merci'],
+    roles: ['410'],
     parent: AZIENDA,
     otherIds: [],
     created: '2025-02-17',
@@ -228,11 +255,11 @@ export const SEED_GLNS: GlnRecord[] = [
   {
     gln: glnCode(14),
     name: 'Stabilimento di produzione',
-    type: 'Luogo fisico',
+    type: 'Luogo fisso',
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Via dell’Industria 5', '43100', 'Parma', 'PR'),
-    roles: ['Produzione', 'Ritiro merci'],
+    roles: ['416'],
     parent: AZIENDA,
     otherIds: [],
     created: '2025-06-04',
@@ -241,11 +268,11 @@ export const SEED_GLNS: GlnRecord[] = [
   {
     gln: glnCode(15),
     name: 'Punto vendita di Roma',
-    type: 'Luogo fisico',
+    type: 'Luogo fisso',
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Piazza del Negozio 3', '00100', 'Roma', 'RM'),
-    roles: ['Vendita al pubblico', 'Consegna merci'],
+    roles: ['410', '413'],
     parent: AZIENDA,
     otherIds: [],
     created: '2026-05-21',
@@ -254,11 +281,11 @@ export const SEED_GLNS: GlnRecord[] = [
   {
     gln: glnCode(16),
     name: 'Punto vendita di Torino',
-    type: 'Luogo fisico',
+    type: 'Luogo fisso',
     status: 'Attivo',
     registry: 'Non pubblicato',
     address: addr('Corso del Commercio 40', '10100', 'Torino', 'TO'),
-    roles: ['Vendita al pubblico'],
+    roles: ['413'],
     parent: AZIENDA,
     otherIds: [],
     created: '2026-10-14',
@@ -267,7 +294,7 @@ export const SEED_GLNS: GlnRecord[] = [
   {
     gln: glnCode(17),
     name: 'Nuovo magazzino di Bologna',
-    type: 'Luogo fisico',
+    type: 'Luogo fisso',
     status: 'Bozza',
     registry: 'Non pubblicato',
     address: addr('Via della Logistica 8', '40100', 'Bologna', 'BO'),
@@ -280,11 +307,11 @@ export const SEED_GLNS: GlnRecord[] = [
   {
     gln: glnCode(18),
     name: 'Deposito di Verona',
-    type: 'Luogo fisico',
+    type: 'Luogo fisso',
     status: 'Non attivo',
     registry: 'Visibile ai partner',
     address: addr('Via del Deposito 2', '37100', 'Verona', 'VR'),
-    roles: ['Consegna merci'],
+    roles: ['410'],
     parent: AZIENDA,
     otherIds: [],
     created: '2024-04-02',
@@ -296,7 +323,7 @@ export const SEED_GLNS: GlnRecord[] = [
     type: 'Reparto o funzione',
     status: 'Attivo',
     registry: 'Visibile ai partner',
-    roles: ['Ordini'],
+    roles: [],
     parent: AZIENDA,
     otherIds: [],
     created: '2025-01-09',
@@ -308,7 +335,7 @@ export const SEED_GLNS: GlnRecord[] = [
     type: 'Reparto o funzione',
     status: 'Attivo',
     registry: 'In pubblicazione',
-    roles: ['Fatturazione'],
+    roles: ['411'],
     parent: AZIENDA,
     otherIds: [],
     created: '2026-08-26',
@@ -320,23 +347,11 @@ export const SEED_GLNS: GlnRecord[] = [
     type: 'Luogo mobile',
     status: 'Attivo',
     registry: 'Visibile ai partner',
-    roles: ['Consegna merci'],
+    roles: [],
     parent: MAGAZZINO,
     otherIds: [{ label: 'Targa', value: 'AA000AA' }],
     created: '2025-09-15',
     modified: '2025-09-15',
-  },
-  {
-    gln: glnCode(41),
-    name: 'Casella ordini elettronici (EDI)',
-    type: 'Luogo digitale',
-    status: 'Attivo',
-    registry: 'Visibile ai partner',
-    roles: ['Ordini'],
-    parent: AZIENDA,
-    otherIds: [],
-    created: '2025-03-03',
-    modified: '2025-11-12',
   },
   {
     gln: glnCode(51),

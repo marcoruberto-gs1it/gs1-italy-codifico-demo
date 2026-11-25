@@ -259,9 +259,8 @@ export class DashboardPage {
   protected glnTypeLabel(type: string, n: number): string {
     const forms: Record<string, [string, string]> = {
       Azienda: ['azienda', 'aziende'],
-      'Luogo fisico': ['luogo fisico', 'luoghi fisici'],
+      'Luogo fisso': ['luogo fisso', 'luoghi fissi'],
       'Luogo mobile': ['luogo mobile', 'luoghi mobili'],
-      'Luogo digitale': ['luogo digitale', 'luoghi digitali'],
       'Reparto o funzione': ['reparto o funzione', 'reparti o funzioni'],
       'Da specificare': ['da specificare', 'da specificare'],
     };

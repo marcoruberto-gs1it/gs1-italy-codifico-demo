@@ -38,17 +38,32 @@
         </li>
       }
     </ul>
-    <h3 class="types-title">Cinque tipi, a seconda di cosa vuoi identificare</h3>
-    <ul class="types">
-      @for (t of types; track t) {
-        <li>
-          <app-icon [name]="info[t].icon" [size]="22" [stroke]="1.7" />
-          <strong>{{ t }}</strong>
-          <span>{{ info[t].short }}</span>
-          <span class="ex">Per esempio: {{ info[t].examples.join(', ') }}</span>
-        </li>
+    <h3 class="types-title">Un soggetto o un luogo: i due tipi di GLN secondo gli AI GS1</h3>
+    <div class="families">
+      @for (f of families; track f.ai) {
+        <div class="family">
+          <p class="family-head">
+            <span class="ai-tag" [attr.title]="'AI ' + f.ai + ' · ' + f.gs1">AI {{ f.ai }}</span>
+            <strong>{{ f.label }}</strong>
+          </p>
+          <p class="family-short">{{ f.short }}</p>
+          <ul class="types">
+            @for (t of f.types; track t) {
+              <li>
+                <app-icon [name]="info[t].icon" [size]="22" [stroke]="1.7" />
+                <strong>{{ t }}</strong>
+                <span>{{ info[t].short }}</span>
+                <span class="ex">Per esempio: {{ info[t].examples.join(', ') }}</span>
+              </li>
+            }
+          </ul>
+        </div>
       }
-    </ul>
+    </div>
+    <p class="ai-note">
+      Nei documenti con i partner lo stesso GLN può comparire con altri AI che ne indicano il ruolo, ad esempio 410 per il
+      luogo di consegna o 411 per la fatturazione. Li trovi nella scheda di ogni sede o località.
+    </p>
   </section>
 }
 
@@ -116,6 +131,9 @@
               <span [class]="typeClass(g.type)">
                 <app-icon [name]="info[g.type].icon" [size]="15" [stroke]="1.9" />{{ g.type }}
               </span>
+              @if (info[g.type].ai; as a) {
+                <span class="ai-tag small" [attr.title]="'AI ' + a + ' · ' + ai[a].label + ': ' + ai[a].gs1">AI {{ a }}</span>
+              }
             </td>
             <td><span [class]="statusClass(g)">{{ g.status }}</span></td>
             <td><app-registry-badge [state]="g.registry" /></td>

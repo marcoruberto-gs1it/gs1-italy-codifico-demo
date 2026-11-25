@@ -109,6 +109,40 @@
   font-weight: 500;
 }
 
+.ai-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--gs1-blue);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+
+.ai-line {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-strong);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.ai-line .gs1 {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.plain {
+  font-weight: 400;
+}
+
+.chips .ai-tag {
+  margin-right: 4px;
+}
+
 .type-line {
   display: inline-flex;
   align-items: center;

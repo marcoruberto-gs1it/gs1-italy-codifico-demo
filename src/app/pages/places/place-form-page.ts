@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { GLN_PREFIX, GLN_ROLES, GLN_TYPE_INFO, GLN_TYPES, GlnRole, GlnType } from '../../core/gln-data';
+import { GLN_AI, GLN_PREFIX, GLN_ROLES, GLN_TYPE_INFO, GLN_TYPES, GlnAi, GlnRole, GlnType } from '../../core/gln-data';
 import { GlnDraft, GlnStore } from '../../core/gln-store';
 import { Icon } from '../../ui/icon';
 import { Toasts } from '../../ui/toast';
@@ -34,6 +34,12 @@ export class PlaceFormPage {
 
   protected readonly info = GLN_TYPE_INFO;
   protected readonly types = GLN_TYPES;
+  /** I tipi raggruppati per l'AI che identifica il GLN. */
+  protected readonly families = (['417', '414'] as GlnAi[]).map((ai) => ({
+    ai,
+    ...GLN_AI[ai],
+    types: GLN_TYPES.filter((t) => GLN_TYPE_INFO[t].ai === ai),
+  }));
   protected readonly roles = GLN_ROLES;
   protected readonly countries = COUNTRIES;
   protected readonly prefix = GLN_PREFIX;
@@ -60,7 +66,7 @@ export class PlaceFormPage {
 
   /** Possibili "Fa parte di": l'azienda e i luoghi già attivi. */
   protected parents = computed(() =>
-    this.store.all().filter((g) => g.gln !== this.gln() && g.status !== 'Bozza' && (g.type === 'Azienda' || g.type === 'Luogo fisico')),
+    this.store.all().filter((g) => g.gln !== this.gln() && g.status !== 'Bozza' && (g.type === 'Azienda' || g.type === 'Luogo fisso')),
   );
 
   protected code = computed(() => this.existing()?.gln ?? this.store.nextCode());

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { GLN_TYPE_INFO, GLN_TYPES, GLN_USES, GlnRecord, GlnType } from '../../core/gln-data';
+import { GLN_AI, GLN_TYPE_INFO, GLN_TYPES, GLN_USES, GlnAi, GlnRecord, GlnType } from '../../core/gln-data';
 import { GlnStore } from '../../core/gln-store';
 import { Icon } from '../../ui/icon';
 import { Toasts } from '../../ui/toast';
@@ -30,6 +30,13 @@ export class PlacesPage {
 
   protected readonly info = GLN_TYPE_INFO;
   protected readonly types = GLN_TYPES;
+  protected readonly ai = GLN_AI;
+  /** I tipi raggruppati per AI, per l'introduzione. */
+  protected readonly families = (['417', '414'] as GlnAi[]).map((ai) => ({
+    ai,
+    ...GLN_AI[ai],
+    types: GLN_TYPES.filter((t) => GLN_TYPE_INFO[t].ai === ai),
+  }));
   protected readonly uses = GLN_USES;
 
   protected pageSize = signal(10);

@@ -75,8 +75,20 @@
                   <app-icon [name]="info[g.type].icon" [size]="16" [stroke]="1.9" />
                   <strong>{{ g.type }}</strong>
                 </span>
-                <span class="hint">{{ info[g.type].short }} Nel linguaggio GS1: {{ info[g.type].gs1Term.toLowerCase() }}.</span>
+                @if (info[g.type].ai; as a) {
+                  <span class="ai-line">
+                    <span class="ai-tag">AI {{ a }}</span> {{ ai[a].label }} · <span class="gs1">{{ ai[a].gs1 }}</span>
+                  </span>
+                }
+                <span class="hint">{{ info[g.type].short }}</span>
               </dd>
+              @if (info[g.type].ai === '414') {
+                <dt>Parti interne</dt>
+                <dd>
+                  <span class="plain">Per una banchina, un’area o un reparto di questo luogo non serve un nuovo GLN: si aggiunge
+                  l’estensione <span class="ai-tag">AI 254</span> al codice.</span>
+                </dd>
+              }
               <dt>Nome</dt>
               <dd>{{ g.name }}</dd>
               @if (g.type !== 'Azienda') {
@@ -113,7 +125,7 @@
           <div class="group">
             <h3>
               Ruoli verso i partner
-              <app-tip tipId="tip-roles" text="I ruoli dicono a clienti e fornitori a cosa serve questo GLN: ad esempio dove mandare le fatture o dove consegnare la merce.">
+              <app-tip tipId="tip-roles" text="Sono gli AI GS1 con cui questo GLN compare nei documenti dei partner: ad esempio 410 per dove consegnare la merce, 411 per a chi mandare la fattura.">
                 <button type="button" class="info-btn" aria-label="Cosa sono i ruoli?" aria-describedby="tip-roles">
                   <app-icon name="info" [size]="15" [stroke]="2" />
                 </button>
@@ -122,7 +134,10 @@
             @if (g.roles.length) {
               <ul class="chips">
                 @for (r of g.roles; track r) {
-                  <li>{{ r }}</li>
+                  <li [attr.title]="role(r).short">
+                    <span class="ai-tag">AI {{ r }}</span> {{ role(r).label }}
+                    <span class="visually-hidden">: {{ role(r).short }}</span>
+                  </li>
                 }
               </ul>
             } @else {

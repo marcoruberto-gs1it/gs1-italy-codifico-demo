@@ -48,6 +48,14 @@ export class AppHeader {
   protected readonly nav: NavEntry[] = [
     { label: 'Dashboard', route: '/dashboard' },
     { label: 'Prefissi' },
+    // I GLN si chiamano per quello che identificano, come i GTIN sono "Prodotti".
+    {
+      label: 'Sedi e località',
+      items: [
+        { label: 'Visualizza sedi e località', route: '/sedi-localita' },
+        { label: 'Nuova sede o località', route: '/sedi-localita/nuova', create: true },
+      ],
+    },
     {
       label: 'Prodotti',
       items: [
@@ -71,14 +79,6 @@ export class AppHeader {
     {
       label: 'Richieste',
       items: [{ label: 'Visualizza le richieste' }, { label: 'Nuova richiesta', create: true }],
-    },
-    // I GLN si chiamano per quello che identificano, come i GTIN sono "Prodotti".
-    {
-      label: 'Sedi e località',
-      items: [
-        { label: 'Visualizza sedi e località', route: '/sedi-localita' },
-        { label: 'Nuova sede o località', route: '/sedi-localita/nuova', create: true },
-      ],
     },
   ];
 
