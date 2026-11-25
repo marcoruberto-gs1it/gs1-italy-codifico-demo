@@ -119,6 +119,11 @@ export class DemoStore {
     return this.state()[gtin]?.links.filter(isActive).length ?? 0;
   }
 
+  /** Link attivi creati dall'azienda su un prodotto qualsiasi (per la dashboard). */
+  activeLinksFor(gtin: string): DigitalLinkEntry[] {
+    return this.state()[gtin]?.links.filter(isActive) ?? [];
+  }
+
   gtinActiveFor(gtin: string): boolean {
     return this.state()[gtin]?.gtinActive ?? true;
   }
