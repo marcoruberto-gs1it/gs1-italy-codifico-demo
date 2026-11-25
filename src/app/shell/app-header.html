@@ -85,7 +85,7 @@
             </ul>
           }
         } @else if (entry.route) {
-          <a class="nav-link" [routerLink]="entry.route">{{ entry.label }}</a>
+          <a class="nav-link" [routerLink]="entry.route" routerLinkActive="active" ariaCurrentWhenActive="page">{{ entry.label }}</a>
         } @else {
           <button type="button" class="nav-link" (click)="go(entry)">{{ entry.label }}</button>
         }

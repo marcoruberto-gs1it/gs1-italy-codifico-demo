@@ -1,18 +1,21 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   afterNextRender,
   inject,
   input,
   output,
 } from '@angular/core';
+import { trapTab } from './focus-trap';
 import { Icon } from './icon';
 
 /**
  * Finestra modale nello stile di Codifico+: velo grigio sulla pagina, pannello bianco largo
  * 1020 px, titolo blu con filetto sotto e la X in alto a destra. Esc e click sul velo chiudono;
- * il focus entra nel pannello all'apertura.
+ * il focus entra nel pannello all'apertura, resta dentro finché è aperto e alla chiusura torna
+ * all'elemento che l'aveva aperto.
  */
 @Component({
   selector: 'app-modal',
@@ -83,7 +86,15 @@ import { Icon } from './icon';
   `,
   template: `
     <div class="backdrop" (click)="onBackdrop($event)">
-      <section class="panel" role="dialog" aria-modal="true" [attr.aria-label]="title()" tabindex="-1" #panel>
+      <section
+        class="panel"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="title()"
+        tabindex="-1"
+        #panel
+        (keydown)="trap($event, panel)"
+      >
         <button type="button" class="close" (click)="closed.emit()" aria-label="Chiudi">
           <app-icon name="close" [size]="20" />
         </button>
@@ -101,13 +112,22 @@ export class Modal {
   closed = output<void>();
 
   private host = inject(ElementRef<HTMLElement>);
+  /** Chi aveva il focus all'apertura: lo riprende alla chiusura. */
+  private opener = document.activeElement as HTMLElement | null;
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      if (this.opener?.isConnected) this.opener.focus();
+    });
     afterNextRender(() => {
       const panel = this.host.nativeElement.querySelector('.panel') as HTMLElement | null;
       const first = panel?.querySelector<HTMLElement>('input, select, textarea, [data-autofocus]');
       (first ?? panel)?.focus();
     });
+  }
+
+  protected trap(event: KeyboardEvent, panel: HTMLElement): void {
+    trapTab(event, panel);
   }
 
   protected onBackdrop(event: MouseEvent): void {

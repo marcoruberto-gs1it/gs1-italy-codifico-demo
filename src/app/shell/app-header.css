@@ -173,6 +173,12 @@
   color: var(--gs1-orange);
 }
 
+/* Voce della pagina corrente: arancione con filetto in basso. */
+.nav-link.active {
+  color: var(--gs1-orange);
+  box-shadow: inset 0 -3px 0 var(--gs1-orange);
+}
+
 .menu {
   position: absolute;
   top: calc(100% + 2px);

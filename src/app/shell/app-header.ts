@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { DemoStore } from '../core/demo-store';
 import { Gs1Logo } from '../ui/gs1-logo';
 import { Icon } from '../ui/icon';
@@ -28,7 +28,7 @@ interface NavEntry {
  */
 @Component({
   selector: 'app-header',
-  imports: [Gs1Logo, Icon, RouterLink],
+  imports: [Gs1Logo, Icon, RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:click)': 'onDocumentClick($event)', '(document:keydown.escape)': 'openMenu.set(null)' },
   templateUrl: './app-header.html',

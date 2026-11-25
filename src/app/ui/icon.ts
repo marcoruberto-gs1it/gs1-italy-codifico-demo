@@ -23,7 +23,9 @@ export type IconName =
   | 'link'
   | 'info'
   | 'lock'
-  | 'check';
+  | 'check'
+  | 'copy'
+  | 'book';
 
 /** Icone a tratto, disegnate in SVG inline: niente font di icone da caricare. */
 @Component({
@@ -138,6 +140,14 @@ export type IconName =
         @case ('lock') {
           <rect x="5" y="10.5" width="14" height="10" rx="2" />
           <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+        }
+        @case ('copy') {
+          <rect x="8.5" y="8.5" width="12" height="12" rx="1.8" />
+          <path d="M15.5 8.5V5.3a1.8 1.8 0 0 0-1.8-1.8H5.3a1.8 1.8 0 0 0-1.8 1.8v8.4a1.8 1.8 0 0 0 1.8 1.8h3.2" />
+        }
+        @case ('book') {
+          <path d="M4 5.5A2 2 0 0 1 6 3.5h5v16H6a2 2 0 0 0-2 2Z" />
+          <path d="M20 5.5a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2Z" />
         }
         @case ('info') {
           <circle cx="12" cy="12" r="9.5" />
