@@ -27,6 +27,16 @@
   <app-tutorial-modal (closed)="tutorialOpen.set(false)" />
 }
 
+<app-filter-overview
+  [groups]="overview()"
+  [active]="filters()"
+  [total]="rows().length"
+  [shown]="filtered().length"
+  noun="prodotti a peso fisso"
+  (toggle)="toggleFilter($any($event.group), $event.value)"
+  (clear)="clearFilters()"
+/>
+
 <div class="panel">
   <div class="list">
     <div class="toolbar">
@@ -161,28 +171,4 @@
     </div>
   </div>
 
-  <aside class="filters" aria-label="Filtri">
-    <div class="filters-head">
-      <span>Filtri Attivi - {{ activeFilters() }}</span>
-      <button type="button" class="clear" [disabled]="!activeFilters()" (click)="clearFilters()">Pulisci Tutto</button>
-    </div>
-    @for (g of facets(); track g.id) {
-      <h2 class="facet-title">
-        {{ g.label }}
-        @if (g.isNew) {
-          <span class="new-tag">Nuovo</span>
-        }
-      </h2>
-      <ul class="facet">
-        @for (i of g.items; track i.value) {
-          <li>
-            <button type="button" [class.on]="isOn(g.id, i.value)" [attr.aria-pressed]="isOn(g.id, i.value)" (click)="toggleFilter(g.id, i.value)">
-              {{ i.value }}
-              <span class="count">{{ i.count }}</span>
-            </button>
-          </li>
-        }
-      </ul>
-    }
-  </aside>
 </div>

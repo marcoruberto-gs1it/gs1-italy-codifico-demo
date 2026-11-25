@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { generatedLinks } from '../../core/demo-data';
 import { DemoStore } from '../../core/demo-store';
+import { FilterOverview, OverviewGroup } from '../../ui/filter-overview';
 import { Icon } from '../../ui/icon';
 import { ProductActionsMenu } from '../../ui/product-actions-menu';
 import { Toasts } from '../../ui/toast';
@@ -33,7 +35,7 @@ type FilterGroup = 'type' | 'status' | 'source' | 'dl';
  */
 @Component({
   selector: 'app-products-page',
-  imports: [Icon, ProductActionsMenu, TutorialModal],
+  imports: [Icon, ProductActionsMenu, TutorialModal, FilterOverview],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './products-page.html',
   styleUrl: './products-page.css',
@@ -94,11 +96,18 @@ export class ProductsPage {
     return this.store.has(gtin);
   }
 
+  /**
+   * Link attivi del prodotto: quelli dell'azienda più quelli generati dai servizi (es. le
+   * annate Brindo), come in dashboard: anche questi danno al prodotto il GS1 Digital Link.
+   */
   protected linkCount(gtin: string): number {
-    return this.store.linkCountFor(gtin);
+    const p = this.store.find(gtin);
+    return this.store.linkCountFor(gtin) + (p ? generatedLinks(p).length : 0);
   }
 
   private dlState(r: Row): string {
+    // Il Digital Link esiste solo per i prodotti finalizzati: bozze e cancellati non contano.
+    if (r.status !== 'Finalizzato') return 'Non disponibile';
     return this.linkCount(r.gtin) ? 'Configurato' : 'Da configurare';
   }
 
@@ -123,18 +132,37 @@ export class ProductsPage {
     return this.filtered().slice(start, start + this.pageSize());
   });
 
-  protected activeFilters = computed(() => Object.values(this.filters()).reduce((n, v) => n + v.length, 0));
 
-  /** Gruppi di filtri con i conteggi sull'intero elenco, come in Codifico+. */
-  protected facets = computed(() => {
+  /**
+   * Riepilogo e filtri in alto, con i conteggi sull'intero elenco. I colori sono quelli dei
+   * badge in tabella; "Tipo" non c'è perché tutti i prodotti sono GTIN-13 (un filtro inutile).
+   */
+  protected overview = computed<OverviewGroup[]>(() => {
     const count = (group: FilterGroup, value: string) => this.rows().filter((r) => this.valueOf(r, group) === value).length;
-    const groups: { id: FilterGroup; label: string; values: string[]; isNew?: boolean }[] = [
-      { id: 'type', label: 'Tipo', values: ['GTIN-13'] },
-      { id: 'status', label: 'Stato', values: ['Bozza', 'Finalizzato', 'Cancellato'] },
-      { id: 'source', label: 'Fonte', values: ['GDSN', 'Immagino', 'Locale'] },
-      { id: 'dl', label: 'GS1 Digital Link', values: ['Configurato', 'Da configurare'], isNew: true },
+    const item = (group: FilterGroup, value: string, color: string, icon?: OverviewGroup['items'][number]['icon']) => ({
+      value,
+      count: count(group, value),
+      color,
+      icon,
+    });
+    return [
+      {
+        id: 'status',
+        label: 'Stato',
+        items: [item('status', 'Finalizzato', '#6dbb3c'), item('status', 'Bozza', '#0f6fb5'), item('status', 'Cancellato', '#a8b3bd')],
+      },
+      {
+        id: 'dl',
+        label: 'GS1 Digital Link',
+        isNew: true,
+        items: [item('dl', 'Configurato', '#3f8a2a', 'link'), item('dl', 'Da configurare', '#f26334', 'plus')],
+      },
+      {
+        id: 'source',
+        label: 'Fonte dei dati',
+        items: [item('source', 'Locale', '#7d8c99'), item('source', 'GDSN', '#d22630'), item('source', 'Immagino', '#f6a623')],
+      },
     ];
-    return groups.map((g) => ({ ...g, items: g.values.map((v) => ({ value: v, count: count(g.id, v) })) }));
   });
 
   protected isOn(group: FilterGroup, value: string): boolean {

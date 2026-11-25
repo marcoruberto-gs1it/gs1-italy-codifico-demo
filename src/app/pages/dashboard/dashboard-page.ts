@@ -19,8 +19,6 @@ type RecentTab = 'fixed' | 'variable' | 'gln';
 type RequestTab = 'changes' | 'variable';
 
 const DEMO_ONLY = 'Nella demo sono consultabili i prodotti con l’etichetta “Demo”';
-/** Utente della demo: gli annunci chiusi si ricordano per utente. */
-const USER_KEY = 'mario.rossi';
 
 /**
  * Dashboard di Codifico+ ("Benvenuto in Codifico"). Risponde a due domande, in quest'ordine:
@@ -103,8 +101,11 @@ export class DashboardPage {
   /** Un solo annuncio alla volta: benvenuto senza prodotti finalizzati, altrimenti il Digital Link. */
   protected banner = computed<'welcome' | 'dl'>(() => (this.m.dl().scope === 0 ? 'welcome' : 'dl'));
 
-  /** Annunci chiusi con "Ho capito" (localStorage, per utente e per annuncio). */
-  private dismissed = signal<string[]>(loadDismissed());
+  /**
+   * Annunci chiusi con "Ho capito": solo finché si resta sulla pagina. A ogni caricamento della
+   * dashboard il banner ricompare, così la demo si può mostrare più volte.
+   */
+  private dismissed = signal<string[]>([]);
   protected bannerDismissed = computed(() => this.dismissed().includes(this.banner()));
   protected bannerTitle = computed(() =>
     this.banner() === 'dl' ? 'Arriva il GS1 Digital Link' : 'Inizia dal tuo primo prodotto',
@@ -123,7 +124,6 @@ export class DashboardPage {
   /** L'utente ha preso atto dell'annuncio: sparisce e resta richiamabile dalla Guida. */
   protected dismissBanner(): void {
     this.setDismissed(true);
-    this.toasts.show('Annuncio chiuso. Puoi rivederlo dalla Guida.', 'info');
     afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>('.guide-btn')?.focus(), {
       injector: this.injector,
     });
@@ -137,7 +137,6 @@ export class DashboardPage {
   private setDismissed(value: boolean): void {
     const id = this.banner();
     this.dismissed.update((list) => (value ? [...new Set([...list, id])] : list.filter((x) => x !== id)));
-    saveDismissed(this.dismissed());
   }
 
   protected openVideo(): void {
@@ -277,25 +276,5 @@ export class DashboardPage {
 
   protected notInDemo(): void {
     this.toasts.show('Sezione non inclusa nella demo', 'info');
-  }
-}
-
-const DISMISSED_KEY = `codifico-demo:dashboard:annunci-chiusi:${USER_KEY}`;
-
-function loadDismissed(): string[] {
-  try {
-    const raw = localStorage.getItem(DISMISSED_KEY);
-    const list: unknown = raw ? JSON.parse(raw) : [];
-    return Array.isArray(list) ? list.filter((x): x is string => typeof x === 'string') : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveDismissed(list: string[]): void {
-  try {
-    localStorage.setItem(DISMISSED_KEY, JSON.stringify(list));
-  } catch {
-    // Storage non disponibile: l'annuncio ricompare al prossimo caricamento.
   }
 }

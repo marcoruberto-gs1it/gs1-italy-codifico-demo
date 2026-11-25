@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Router, RouterLink } from '@angular/router';
 import { GLN_AI, GLN_TYPE_INFO, GLN_TYPES, GLN_USES, GlnAi, GlnRecord, GlnType } from '../../core/gln-data';
 import { GlnStore } from '../../core/gln-store';
+import { FilterOverview, OverviewGroup } from '../../ui/filter-overview';
 import { Icon } from '../../ui/icon';
 import { Toasts } from '../../ui/toast';
 import { RegistryBadge } from './registry-badge';
@@ -18,7 +19,7 @@ type FilterGroup = 'type' | 'status' | 'registry';
  */
 @Component({
   selector: 'app-places-page',
-  imports: [Icon, RouterLink, RegistryBadge],
+  imports: [Icon, RouterLink, RegistryBadge, FilterOverview],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './places-page.html',
   styleUrls: ['../products/products-page.css', './places-page.css'],
@@ -68,19 +69,48 @@ export class PlacesPage {
     return this.filtered().slice(start, start + this.pageSize());
   });
 
-  protected activeFilters = computed(() => Object.values(this.filters()).reduce((n, v) => n + v.length, 0));
-
-  protected facets = computed(() => {
-    const count = (group: FilterGroup, value: string) => this.store.all().filter((g) => this.valueOf(g, group) === value).length;
-    const groups: { id: FilterGroup; label: string; values: string[] }[] = [
-      { id: 'type', label: 'Tipo', values: [...GLN_TYPES, 'Da specificare'] },
-      { id: 'status', label: 'Stato', values: ['Bozza', 'Attivo', 'Non attivo'] },
-      { id: 'registry', label: 'Registro GS1', values: ['Visibile ai partner', 'In pubblicazione', 'Non pubblicato'] },
+  /**
+   * Riepilogo e filtri in alto. Tipo: la barra raggruppa per AI (417 soggetto, 414 luogo fisico)
+   * e i filtri hanno l'icona del tipo; Stato e Registro usano i colori di badge e icone in tabella.
+   */
+  protected overview = computed<OverviewGroup[]>(() => {
+    const all = this.store.all();
+    const count = (group: FilterGroup, value: string) => all.filter((g) => this.valueOf(g, group) === value).length;
+    const familyColor = (t: GlnType) => (GLN_TYPE_INFO[t].ai === '417' ? '#2e5eaa' : GLN_TYPE_INFO[t].ai === '414' ? '#018dbd' : '#b77400');
+    const types: GlnType[] = [...GLN_TYPES, 'Da specificare'];
+    const byAi = (ai: string | null) => all.filter((g) => GLN_TYPE_INFO[g.type].ai === ai).length;
+    return [
+      {
+        id: 'type',
+        label: 'Tipo',
+        items: types
+          .map((t) => ({ value: t, count: count('type', t), color: familyColor(t), icon: GLN_TYPE_INFO[t].icon }))
+          .filter((i) => i.count || this.isOn('type', i.value)),
+        bar: [
+          { label: 'AI 417 · Soggetto', count: byAi('417'), color: '#2e5eaa' },
+          { label: 'AI 414 · Luogo fisico', count: byAi('414'), color: '#018dbd' },
+          { label: 'Da specificare', count: byAi(null), color: '#b77400' },
+        ],
+      },
+      {
+        id: 'status',
+        label: 'Stato',
+        items: [
+          { value: 'Attivo', count: count('status', 'Attivo'), color: '#6dbb3c' },
+          { value: 'Bozza', count: count('status', 'Bozza'), color: '#0f6fb5' },
+          { value: 'Non attivo', count: count('status', 'Non attivo'), color: '#a8b3bd' },
+        ],
+      },
+      {
+        id: 'registry',
+        label: 'Registro GS1',
+        items: [
+          { value: 'Visibile ai partner', count: count('registry', 'Visibile ai partner'), color: '#3f7a1a', icon: 'check-circle' },
+          { value: 'In pubblicazione', count: count('registry', 'In pubblicazione'), color: '#0b5f9c', icon: 'clock' },
+          { value: 'Non pubblicato', count: count('registry', 'Non pubblicato'), color: '#7d8c99', icon: 'minus-circle' },
+        ],
+      },
     ];
-    return groups.map((g) => ({
-      ...g,
-      items: g.values.map((v) => ({ value: v, count: count(g.id, v) })).filter((i) => i.count || this.isOn(g.id, i.value)),
-    }));
   });
 
   protected isOn(group: FilterGroup, value: string): boolean {

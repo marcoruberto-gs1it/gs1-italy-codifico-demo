@@ -74,6 +74,16 @@
   </div>
 }
 
+<app-filter-overview
+  [groups]="overview()"
+  [active]="filters()"
+  [total]="store.all().length"
+  [shown]="filtered().length"
+  noun="sedi e località"
+  (toggle)="toggleFilter($any($event.group), $event.value)"
+  (clear)="clearFilters()"
+/>
+
 <div class="panel">
   <div class="list">
     <div class="toolbar">
@@ -167,23 +177,4 @@
     </div>
   </div>
 
-  <aside class="filters" aria-label="Filtri">
-    <div class="filters-head">
-      <span>Filtri attivi: {{ activeFilters() }}</span>
-      <button type="button" class="clear" [disabled]="!activeFilters()" (click)="clearFilters()">Pulisci tutto</button>
-    </div>
-    @for (g of facets(); track g.id) {
-      <h2 class="facet-title">{{ g.label }}</h2>
-      <ul class="facet">
-        @for (i of g.items; track i.value) {
-          <li>
-            <button type="button" [class.on]="isOn(g.id, i.value)" [attr.aria-pressed]="isOn(g.id, i.value)" (click)="toggleFilter(g.id, i.value)">
-              {{ i.value }}
-              <span class="count">{{ i.count }}</span>
-            </button>
-          </li>
-        }
-      </ul>
-    }
-  </aside>
 </div>
