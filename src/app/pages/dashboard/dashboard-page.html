@@ -453,6 +453,93 @@
     </section>
   </div>
 
+  <aside class="side-col" aria-label="Azienda, accesso rapido e risorse">
+    <section class="card side-card" aria-labelledby="company-title">
+      <h2 id="company-title" class="side-title">La tua azienda</h2>
+      <p class="company-name">{{ m.company() }}</p>
+      @if (m.legalEntity(); as le) {
+        <div class="le">
+          <span class="badge type wide">Entità legale</span>
+          <div class="le-row">
+            <code class="le-code" aria-label="GLN dell’entità legale">{{ le.gln }}</code>
+            <button type="button" class="btn-icon le-copy" aria-label="Copia il GLN dell’entità legale" (click)="copy(le.gln)">
+              <app-icon name="copy" [size]="16" [stroke]="1.9" />
+            </button>
+          </div>
+          <p class="le-note">Assegnato da GS1 Italy, non modificabile.</p>
+        </div>
+      }
+      <h3 class="side-sub">Prefissi</h3>
+      <ul class="prefixes">
+        @for (p of m.prefixes(); track p.code) {
+          <li>
+            <span class="prefix-code">{{ p.code }}</span>
+            <span class="prefix-label">{{ p.label }}</span>
+            <span class="prefix-use">{{ num(p.used) }} / {{ num(p.capacity) }} {{ p.use === 'gtin' ? 'GTIN' : 'GLN' }}</span>
+          </li>
+        }
+      </ul>
+      <button type="button" class="link-btn" (click)="notInDemo()">
+        Gestisci GLN <app-icon name="arrow-right" [size]="14" [stroke]="2" />
+      </button>
+    </section>
+
+    <section class="card side-card" aria-labelledby="quick-title">
+      <h2 id="quick-title" class="side-title">Accesso rapido</h2>
+      <ul class="quick">
+        <li><button type="button" (click)="notInDemo()">Crea un imballo <app-icon name="arrow-right" [size]="15" [stroke]="2" /></button></li>
+        <li><button type="button" (click)="notInDemo()">Gestisci le tue marche <app-icon name="arrow-right" [size]="15" [stroke]="2" /></button></li>
+        <li>
+          <button type="button" (click)="notInDemo()">
+            Esporta i tuoi dati (prodotti e GLN) <app-icon name="arrow-right" [size]="15" [stroke]="2" />
+          </button>
+        </li>
+        <li>
+          <a href="https://www.gs1.org/services/verified-by-gs1" target="_blank" rel="noopener">
+            Verifica un codice su Verified by GS1 <span class="visually-hidden">(si apre in una nuova finestra)</span>
+            <app-icon name="arrow-right" [size]="15" [stroke]="2" />
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="card side-card" aria-labelledby="res-title">
+      <h2 id="res-title" class="side-title">Risorse e aiuto</h2>
+      <ul class="resources">
+        <li>
+          <app-icon name="qrcode" [size]="20" [stroke]="1.8" />
+          <span>
+            <a class="res-link" [href]="t.guide" [attr.download]="t.guideName">
+              Guida al GS1 Digital Link <span class="new-tag">Nuovo</span>
+            </a>
+            PDF, {{ t.guideSize }}: contenuti, lingue e QR code
+          </span>
+        </li>
+        <li>
+          <app-icon name="phone" [size]="20" [stroke]="1.8" />
+          <span>
+            <button type="button" class="res-link" aria-haspopup="dialog" (click)="openVideo()">Video tutorial</button>
+            Il GS1 Digital Link passo per passo
+          </span>
+        </li>
+        <li>
+          <app-icon name="globe" [size]="20" [stroke]="1.8" />
+          <span><button type="button" class="res-link" (click)="notInDemo()">Tutorial GLN</button>Come creare e pubblicare i GLN</span>
+        </li>
+        <li>
+          <app-icon name="help" [size]="20" [stroke]="1.8" />
+          <span><button type="button" class="res-link" (click)="notInDemo()">Help center</button>Domande frequenti e assistenza</span>
+        </li>
+        <li>
+          <app-icon name="bulb" [size]="20" [stroke]="1.8" />
+          <span>
+            <button type="button" class="res-link" (click)="notInDemo()">Academy di GS1 Italy</button>
+            Corsi gratuiti su standard, soluzioni e strumenti GS1
+          </span>
+        </li>
+      </ul>
+    </section>
+  </aside>
 </div>
 
 @if (helpOpen()) {
