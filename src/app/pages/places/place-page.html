@@ -1,0 +1,261 @@
+@if (g(); as g) {
+  <div class="page-head">
+    <div class="identity">
+      <nav class="crumbs" aria-label="Percorso">
+        <a routerLink="/sedi-localita">Sedi e località</a>
+        <span aria-hidden="true">›</span>
+        <span aria-current="page">{{ g.name }}</span>
+      </nav>
+      <h1>
+        GLN {{ g.gln }}
+        @if (g.status === 'Bozza') {
+          <span class="draft-badge">Bozza</span>
+        }
+      </h1>
+      <p class="subtitle">
+        {{ g.name }}
+        <span class="type-pill" [class.todo]="g.type === 'Da specificare'">
+          <app-icon [name]="info[g.type].icon" [size]="15" [stroke]="1.9" /> {{ g.type }}
+        </span>
+      </p>
+    </div>
+    <div class="head-actions">
+      @if (g.status === 'Bozza') {
+        <a class="btn btn-primary" [routerLink]="['/sedi-localita', g.gln, 'modifica']">Completa e attiva</a>
+      } @else {
+        <a class="btn btn-secondary" [routerLink]="['/sedi-localita', g.gln, 'modifica']">
+          <app-icon name="pencil" [size]="15" [stroke]="2" /> Modifica
+        </a>
+      }
+    </div>
+  </div>
+
+  <div class="page-body">
+    <div class="layout">
+      <div class="main-col">
+        @if (g.type === 'Da specificare') {
+          <div class="notice" role="status">
+            <app-icon name="alert-circle" [size]="18" [stroke]="2" />
+            <p>
+              <strong>Il tipo di questo GLN non è indicato.</strong>
+              È stato creato prima che fosse obbligatorio: indica se è l’azienda, un luogo o un reparto, così i partner lo usano nel
+              modo giusto.
+            </p>
+            <a class="btn btn-primary" [routerLink]="['/sedi-localita', g.gln, 'modifica']">Specifica il tipo</a>
+          </div>
+        }
+
+        <section class="card summary" aria-labelledby="sum-title">
+          <h2 id="sum-title" class="card-title">Riepilogo</h2>
+
+          <div class="group">
+            <h3>Codice</h3>
+            <dl class="kv">
+              <dt>Codice GLN</dt>
+              <dd>
+                <span class="anatomy" aria-hidden="true">
+                  <span class="seg"><b>{{ parts().prefix }}</b><small>prefisso azienda</small></span>
+                  <span class="seg"><b>{{ parts().number }}</b><small>numero</small></span>
+                  <span class="seg"><b>{{ parts().check }}</b><small>controllo</small></span>
+                </span>
+                <span class="visually-hidden">{{ g.gln }}</span>
+                <app-tip
+                  tipId="tip-anatomy"
+                  text="Il GLN ha 13 cifre: il prefisso aziendale assegnato da GS1 Italy, un numero scelto da Codifico e una cifra di controllo che evita errori di lettura."
+                  class="end"
+                >
+                  <button type="button" class="info-btn" aria-label="Come è fatto il codice GLN?" aria-describedby="tip-anatomy">
+                    <app-icon name="info" [size]="15" [stroke]="2" />
+                  </button>
+                </app-tip>
+              </dd>
+              <dt>Tipo</dt>
+              <dd>
+                <span class="type-line">
+                  <app-icon [name]="info[g.type].icon" [size]="16" [stroke]="1.9" />
+                  <strong>{{ g.type }}</strong>
+                </span>
+                <span class="hint">{{ info[g.type].short }} Nel linguaggio GS1: {{ info[g.type].gs1Term.toLowerCase() }}.</span>
+              </dd>
+              <dt>Nome</dt>
+              <dd>{{ g.name }}</dd>
+              @if (g.type !== 'Azienda') {
+                <dt>Fa parte di</dt>
+                <dd>
+                  @if (parent(); as p) {
+                    <a [routerLink]="['/sedi-localita', p.gln]">{{ p.name }}</a>
+                    <span class="hint">{{ p.type }} · GLN {{ p.gln }}</span>
+                  } @else {
+                    —
+                  }
+                </dd>
+              }
+              <dt>Creato il</dt>
+              <dd>{{ date(g.created) }}</dd>
+            </dl>
+          </div>
+
+          <div class="group">
+            <h3>Indirizzo</h3>
+            @if (g.address; as a) {
+              <address class="addr">
+                {{ a.street }}<br />
+                {{ a.zip }} {{ a.city }} ({{ a.province }})<br />
+                {{ a.country }}
+              </address>
+            } @else if (info[g.type].address === 'non serve') {
+              <p class="hint">Non serve: un {{ g.type.toLowerCase() }} non ha un indirizzo fisso.</p>
+            } @else {
+              <p class="hint">Nessun indirizzo indicato.</p>
+            }
+          </div>
+
+          <div class="group">
+            <h3>
+              Ruoli verso i partner
+              <app-tip tipId="tip-roles" text="I ruoli dicono a clienti e fornitori a cosa serve questo GLN: ad esempio dove mandare le fatture o dove consegnare la merce.">
+                <button type="button" class="info-btn" aria-label="Cosa sono i ruoli?" aria-describedby="tip-roles">
+                  <app-icon name="info" [size]="15" [stroke]="2" />
+                </button>
+              </app-tip>
+            </h3>
+            @if (g.roles.length) {
+              <ul class="chips">
+                @for (r of g.roles; track r) {
+                  <li>{{ r }}</li>
+                }
+              </ul>
+            } @else {
+              <p class="hint">Nessun ruolo indicato. Aggiungilo con Modifica: aiuta i partner a usare il codice giusto.</p>
+            }
+          </div>
+
+          <div class="group">
+            <h3>Altri codici</h3>
+            @if (g.otherIds.length) {
+              <dl class="kv">
+                @for (o of g.otherIds; track o.label) {
+                  <dt>{{ o.label }}</dt>
+                  <dd>{{ o.value }}</dd>
+                }
+              </dl>
+            } @else {
+              <p class="hint">Nessuno.</p>
+            }
+          </div>
+        </section>
+
+        @if (children().length) {
+          <section class="card summary" aria-labelledby="children-title">
+            <h2 id="children-title" class="card-title">Collegati a questo GLN</h2>
+            <p class="hint">Sedi, luoghi e reparti che fanno parte di {{ g.name }}.</p>
+            <ul class="linked">
+              @for (c of children(); track c.gln) {
+                <li>
+                  <app-icon [name]="info[c.type].icon" [size]="18" [stroke]="1.8" />
+                  <a [routerLink]="['/sedi-localita', c.gln]">{{ c.name }}</a>
+                  <span class="hint">{{ c.type }}</span>
+                  <span class="linked-code">{{ c.gln }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+
+      <aside class="side-col" aria-label="Registro GS1 e stato">
+        <section class="card side-card" aria-labelledby="reg-title">
+          <h2 id="reg-title" class="card-title">Registro GS1</h2>
+          <app-registry-badge [state]="g.registry" />
+          <p class="side-text">
+            @switch (g.registry) {
+              @case ('Visibile ai partner') {
+                Clienti, fornitori ed enti di certificazione possono verificare questo GLN e i suoi dati con
+                <a href="https://www.gs1.org/services/verified-by-gs1" target="_blank" rel="noopener">
+                  Verified by GS1<span class="visually-hidden"> (si apre in una nuova finestra)</span></a
+                >.
+              }
+              @case ('In pubblicazione') {
+                Lo stiamo pubblicando: tra pochi minuti i partner potranno verificarlo.
+              }
+              @default {
+                I partner non possono ancora verificarlo. Pubblicalo per renderlo verificabile da clienti, fornitori ed enti di
+                certificazione.
+              }
+            }
+          </p>
+          <div class="switch-row">
+            <button
+              type="button"
+              class="switch"
+              role="switch"
+              id="sw-publish"
+              [attr.aria-checked]="g.registry !== 'Non pubblicato'"
+              [disabled]="g.status === 'Bozza'"
+              (click)="togglePublish(g)"
+            >
+              <span class="knob"></span>
+              <span class="tick" aria-hidden="true">✓</span>
+            </button>
+            <label class="switch-text" for="sw-publish">Pubblica sul registro GS1</label>
+          </div>
+          @if (g.status === 'Bozza') {
+            <p class="hint">Si può pubblicare dopo aver attivato il GLN.</p>
+          }
+        </section>
+
+        <section class="card side-card" aria-labelledby="state-title">
+          <h2 id="state-title" class="card-title">Stato</h2>
+          <p class="side-text">
+            @switch (g.status) {
+              @case ('Attivo') {
+                In uso. Se il luogo chiude o non lo usi più, disattivalo: il codice resta tuo e lo storico non si perde.
+              }
+              @case ('Non attivo') {
+                Non più in uso. Puoi riattivarlo se torna a servire.
+              }
+              @default {
+                In bozza: completa i dati e attivalo per usarlo con i partner.
+              }
+            }
+          </p>
+          @if (g.status !== 'Bozza') {
+            <div class="switch-row">
+              <button
+                type="button"
+                class="switch"
+                role="switch"
+                id="sw-active"
+                [attr.aria-checked]="g.status === 'Attivo'"
+                (click)="toggleActive(g)"
+              >
+                <span class="knob"></span>
+                <span class="tick" aria-hidden="true">✓</span>
+              </button>
+              <label class="switch-text" for="sw-active">{{ g.status === 'Attivo' ? 'Attivo' : 'Non attivo' }}</label>
+            </div>
+          }
+        </section>
+
+        <section class="card side-card" aria-labelledby="use-title">
+          <h2 id="use-title" class="card-title">Quando si usa</h2>
+          <p class="side-text">{{ info[g.type].short }}</p>
+          @if (info[g.type].examples.length) {
+            <p class="hint">Per esempio: {{ info[g.type].examples.join(', ') }}.</p>
+          }
+          <a routerLink="/sedi-localita" class="side-link">Cosa sono sedi e località</a>
+        </section>
+      </aside>
+    </div>
+  </div>
+} @else {
+  <div class="page-head">
+    <div class="identity">
+      <h1>GLN non trovato</h1>
+      <p class="subtitle">Il codice {{ gln() }} non è tra le sedi e località della tua azienda.</p>
+    </div>
+  </div>
+  <div class="page-body">
+    <a class="btn btn-primary" routerLink="/sedi-localita">Torna a Sedi e località</a>
+  </div>
+}

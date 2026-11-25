@@ -25,7 +25,14 @@ export type IconName =
   | 'lock'
   | 'check'
   | 'copy'
-  | 'book';
+  | 'book'
+  | 'building'
+  | 'map-pin'
+  | 'users'
+  | 'monitor'
+  | 'truck'
+  | 'clock'
+  | 'minus-circle';
 
 /** Icone a tratto, disegnate in SVG inline: niente font di icone da caricare. */
 @Component({
@@ -148,6 +155,37 @@ export type IconName =
         @case ('book') {
           <path d="M4 5.5A2 2 0 0 1 6 3.5h5v16H6a2 2 0 0 0-2 2Z" />
           <path d="M20 5.5a2 2 0 0 0-2-2h-5v16h5a2 2 0 0 1 2 2Z" />
+        }
+        @case ('building') {
+          <path d="M4 21V5.5A1.5 1.5 0 0 1 5.5 4h8A1.5 1.5 0 0 1 15 5.5V21" />
+          <path d="M15 10h3.5A1.5 1.5 0 0 1 20 11.5V21M2.5 21h19" />
+          <path d="M8 8h3M8 11.5h3M8 15h3" />
+        }
+        @case ('map-pin') {
+          <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z" />
+          <circle cx="12" cy="10" r="2.4" />
+        }
+        @case ('users') {
+          <circle cx="9" cy="8.5" r="3.2" />
+          <path d="M3 19.5a6 6 0 0 1 12 0" />
+          <path d="M16 5.6a3.2 3.2 0 0 1 0 5.8M18 14.2a6 6 0 0 1 3 5.3" />
+        }
+        @case ('monitor') {
+          <rect x="3" y="4" width="18" height="12.5" rx="1.6" />
+          <path d="M8.5 20.5h7M12 16.5v4" />
+        }
+        @case ('truck') {
+          <path d="M2.5 6.5h11v9.5h-11zM13.5 9.5h4l3 3.2V16h-7" />
+          <circle cx="6.5" cy="17.5" r="1.8" />
+          <circle cx="17" cy="17.5" r="1.8" />
+        }
+        @case ('clock') {
+          <circle cx="12" cy="12" r="9.5" />
+          <path d="M12 7v5.2l3.4 2" />
+        }
+        @case ('minus-circle') {
+          <circle cx="12" cy="12" r="9.5" />
+          <path d="M8 12h8" />
         }
         @case ('info') {
           <circle cx="12" cy="12" r="9.5" />

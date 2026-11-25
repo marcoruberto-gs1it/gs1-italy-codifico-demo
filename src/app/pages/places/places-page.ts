@@ -1,0 +1,153 @@
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { GLN_TYPE_INFO, GLN_TYPES, GLN_USES, GlnRecord, GlnType } from '../../core/gln-data';
+import { GlnStore } from '../../core/gln-store';
+import { Icon } from '../../ui/icon';
+import { Toasts } from '../../ui/toast';
+import { RegistryBadge } from './registry-badge';
+
+type SortKey = 'gln' | 'name' | 'modified';
+type FilterGroup = 'type' | 'status' | 'registry';
+
+/**
+ * "Sedi e località" (ex "I miei GLN"): l'elenco dei GLN dell'azienda, con la stessa struttura
+ * di Prodotti a peso fisso (ricerca, ordinamento, paginazione, filtri a destra).
+ * Rispetto a oggi: un'introduzione che spiega cosa sono e a cosa servono, tipi in parole
+ * semplici, una sola colonna di stato e una per il registro GS1 al posto di tre badge, un
+ * invito a completare i GLN con il tipo da specificare.
+ */
+@Component({
+  selector: 'app-places-page',
+  imports: [Icon, RouterLink, RegistryBadge],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './places-page.html',
+  styleUrls: ['../products/products-page.css', './places-page.css'],
+})
+export class PlacesPage {
+  protected store = inject(GlnStore);
+  private router = inject(Router);
+  private toasts = inject(Toasts);
+
+  protected readonly info = GLN_TYPE_INFO;
+  protected readonly types = GLN_TYPES;
+  protected readonly uses = GLN_USES;
+
+  protected pageSize = signal(10);
+  protected page = signal(0);
+  protected query = signal('');
+  protected sort = signal<{ key: SortKey; dir: 1 | -1 }>({ key: 'modified', dir: -1 });
+  protected filters = signal<Record<FilterGroup, string[]>>({ type: [], status: [], registry: [] });
+
+  protected toSpecify = computed(() => this.store.all().filter((g) => g.type === 'Da specificare'));
+
+  private valueOf(g: GlnRecord, group: FilterGroup): string {
+    return group === 'type' ? g.type : group === 'status' ? g.status : g.registry;
+  }
+
+  protected filtered = computed(() => {
+    const q = this.query().trim().toLowerCase();
+    const f = this.filters();
+    const { key, dir } = this.sort();
+    return this.store
+      .all()
+      .filter((g) => !q || g.gln.includes(q) || g.name.toLowerCase().includes(q) || (g.address?.city ?? '').toLowerCase().includes(q))
+      .filter((g) => (Object.keys(f) as FilterGroup[]).every((k) => !f[k].length || f[k].includes(this.valueOf(g, k))))
+      .sort((a, b) => a[key].localeCompare(b[key], 'it') * dir);
+  });
+
+  protected pageCount = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize())));
+  protected visible = computed(() => {
+    const start = Math.min(this.page(), this.pageCount() - 1) * this.pageSize();
+    return this.filtered().slice(start, start + this.pageSize());
+  });
+
+  protected activeFilters = computed(() => Object.values(this.filters()).reduce((n, v) => n + v.length, 0));
+
+  protected facets = computed(() => {
+    const count = (group: FilterGroup, value: string) => this.store.all().filter((g) => this.valueOf(g, group) === value).length;
+    const groups: { id: FilterGroup; label: string; values: string[] }[] = [
+      { id: 'type', label: 'Tipo', values: [...GLN_TYPES, 'Da specificare'] },
+      { id: 'status', label: 'Stato', values: ['Bozza', 'Attivo', 'Non attivo'] },
+      { id: 'registry', label: 'Registro GS1', values: ['Visibile ai partner', 'In pubblicazione', 'Non pubblicato'] },
+    ];
+    return groups.map((g) => ({
+      ...g,
+      items: g.values.map((v) => ({ value: v, count: count(g.id, v) })).filter((i) => i.count || this.isOn(g.id, i.value)),
+    }));
+  });
+
+  protected isOn(group: FilterGroup, value: string): boolean {
+    return this.filters()[group].includes(value);
+  }
+
+  protected toggleFilter(group: FilterGroup, value: string): void {
+    this.filters.update((f) => ({
+      ...f,
+      [group]: f[group].includes(value) ? f[group].filter((v) => v !== value) : [...f[group], value],
+    }));
+    this.page.set(0);
+  }
+
+  protected showToSpecify(): void {
+    this.filters.set({ type: ['Da specificare'], status: [], registry: [] });
+    this.page.set(0);
+  }
+
+  protected clearFilters(): void {
+    this.filters.set({ type: [], status: [], registry: [] });
+    this.page.set(0);
+  }
+
+  protected sortBy(key: SortKey): void {
+    this.sort.update((s) => (s.key === key ? { key, dir: s.dir === 1 ? -1 : 1 } : { key, dir: 1 }));
+  }
+
+  protected sortIcon(key: SortKey): string {
+    const s = this.sort();
+    return s.key !== key ? '' : s.dir === 1 ? 'asc' : 'desc';
+  }
+
+  protected ariaSort(key: SortKey): string {
+    const s = this.sort();
+    return s.key !== key ? 'none' : s.dir === 1 ? 'ascending' : 'descending';
+  }
+
+  protected setQuery(value: string): void {
+    this.query.set(value);
+    this.page.set(0);
+  }
+
+  protected setPageSize(value: string): void {
+    this.pageSize.set(Number(value));
+    this.page.set(0);
+  }
+
+  protected typeClass(type: GlnType): string {
+    return type === 'Da specificare' ? 'gln-type todo' : 'gln-type';
+  }
+
+  protected statusClass(g: GlnRecord): string {
+    return g.status === 'Bozza' ? 'badge bozza' : g.status === 'Attivo' ? 'badge finalizzato' : 'badge cancellato';
+  }
+
+  protected date(iso: string): string {
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  protected open(g: GlnRecord): void {
+    void this.router.navigate(g.status === 'Bozza' ? ['/sedi-localita', g.gln, 'modifica'] : ['/sedi-localita', g.gln]);
+  }
+
+  /** Esporta l'elenco filtrato in CSV, con le stesse colonne della tabella. */
+  protected exportCsv(): void {
+    const head = ['Codice GLN', 'Nome', 'Tipo', 'Stato', 'Registro GS1', 'Comune', 'Data modifica'];
+    const rows = this.filtered().map((g) => [g.gln, g.name, g.type, g.status, g.registry, g.address?.city ?? '', this.date(g.modified)]);
+    const csv = [head, ...rows].map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(';')).join('\r\n');
+    const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: 'sedi-e-localita.csv' });
+    a.click();
+    URL.revokeObjectURL(url);
+    this.toasts.show(`Esportate ${rows.length} sedi e località`);
+  }
+}

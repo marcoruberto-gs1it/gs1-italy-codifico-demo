@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { DemoStore } from '../core/demo-store';
+import { GlnStore } from '../core/gln-store';
 import { Gs1Logo } from '../ui/gs1-logo';
 import { Icon } from '../ui/icon';
 import { Toasts } from '../ui/toast';
@@ -24,7 +25,7 @@ interface NavEntry {
 
 /**
  * Intestazione di Codifico+: barra "Azienda attiva", logo con ricerca e profilo, menu principale.
- * Nella demo funzionano Dashboard e Prodotti; le altre voci rispondono con un avviso.
+ * Nella demo funzionano Dashboard, Prodotti e Sedi e località; le altre voci rispondono con un avviso.
  */
 @Component({
   selector: 'app-header',
@@ -36,6 +37,7 @@ interface NavEntry {
 })
 export class AppHeader {
   protected store = inject(DemoStore);
+  private glns = inject(GlnStore);
   private toasts = inject(Toasts);
   private router = inject(Router);
   private host = inject(ElementRef<HTMLElement>);
@@ -73,7 +75,10 @@ export class AppHeader {
     // I GLN si chiamano per quello che identificano, come i GTIN sono "Prodotti".
     {
       label: 'Sedi e località',
-      items: [{ label: 'Visualizza sedi e località' }, { label: 'Nuova sede o località', create: true }],
+      items: [
+        { label: 'Visualizza sedi e località', route: '/sedi-localita' },
+        { label: 'Nuova sede o località', route: '/sedi-localita/nuova', create: true },
+      ],
     },
   ];
 
@@ -100,6 +105,7 @@ export class AppHeader {
 
   protected reset(): void {
     this.store.reset();
+    this.glns.reset();
     this.openMenu.set(null);
     this.toasts.show('Demo ripristinata: nessun link creato');
   }

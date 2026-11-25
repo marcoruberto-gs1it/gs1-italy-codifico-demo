@@ -1,0 +1,175 @@
+<div class="page-head">
+  <div class="identity">
+    <h1>Sedi e località</h1>
+    <p class="lead">
+      I codici GLN che identificano la tua azienda, i suoi luoghi e i suoi reparti.
+      @if (store.introClosed()) {
+        <button type="button" class="link-inline" aria-controls="gln-intro" (click)="store.introClosed.set(false)">
+          Cosa sono e a cosa servono?
+        </button>
+      }
+    </p>
+  </div>
+  <div class="head-actions">
+    <button type="button" class="btn btn-outline" (click)="exportCsv()">Esporta</button>
+    <a class="btn btn-primary" routerLink="/sedi-localita/nuova">
+      <app-icon name="plus" [size]="15" [stroke]="2.2" /> Nuova sede o località
+    </a>
+  </div>
+</div>
+
+<!-- Introduzione: cosa sono i GLN, a cosa servono, quali tipi. Si chiude con "Ho capito". -->
+@if (!store.introClosed()) {
+  <section class="intro" id="gln-intro" aria-labelledby="intro-title">
+    <button type="button" class="intro-close" (click)="store.introClosed.set(true)">
+      Ho capito <app-icon name="close" [size]="15" [stroke]="2" />
+    </button>
+    <h2 id="intro-title">Cosa sono sedi e località</h2>
+    <p class="intro-lead">
+      Il <strong>GLN</strong> (Global Location Number) è il codice GS1 che dice <strong>chi</strong> e <strong>dove</strong>: la tua
+      azienda, un magazzino, un ufficio. È per i luoghi quello che il GTIN è per i prodotti: un codice unico al mondo che clienti,
+      fornitori e trasportatori leggono nei loro sistemi.
+    </p>
+    <ul class="uses">
+      @for (u of uses; track u.title) {
+        <li>
+          <span class="use-icon"><app-icon [name]="u.icon" [size]="20" [stroke]="1.8" /></span>
+          <span><strong>{{ u.title }}</strong>{{ u.text }}</span>
+        </li>
+      }
+    </ul>
+    <h3 class="types-title">Cinque tipi, a seconda di cosa vuoi identificare</h3>
+    <ul class="types">
+      @for (t of types; track t) {
+        <li>
+          <app-icon [name]="info[t].icon" [size]="22" [stroke]="1.7" />
+          <strong>{{ t }}</strong>
+          <span>{{ info[t].short }}</span>
+          <span class="ex">Per esempio: {{ info[t].examples.join(', ') }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+}
+
+@if (toSpecify().length) {
+  <div class="notice" role="status">
+    <app-icon name="alert-circle" [size]="18" [stroke]="2" />
+    <p>
+      <strong>{{ toSpecify().length === 1 ? '1 GLN ha' : toSpecify().length + ' GLN hanno' }} il tipo da specificare.</strong>
+      Indica cosa identificano: così i partner li usano nel modo giusto.
+    </p>
+    <button type="button" class="btn btn-outline" (click)="showToSpecify()">Mostrali</button>
+  </div>
+}
+
+<div class="panel">
+  <div class="list">
+    <div class="toolbar">
+      <label class="show">
+        Mostra
+        <span class="select small">
+          <select (change)="setPageSize($any($event.target).value)" aria-label="Elementi per pagina">
+            @for (n of [10, 20, 50]; track n) {
+              <option [value]="n" [selected]="n === pageSize()">{{ n }}</option>
+            }
+          </select>
+        </span>
+        elementi
+      </label>
+      <label class="search">
+        Cerca:
+        <input type="search" placeholder="Codice o nome" [value]="query()" (input)="setQuery($any($event.target).value)" />
+      </label>
+    </div>
+
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-code" [attr.aria-sort]="ariaSort('gln')">
+            <button type="button" class="sort" [attr.data-dir]="sortIcon('gln')" (click)="sortBy('gln')">Codice GLN</button>
+          </th>
+          <th [attr.aria-sort]="ariaSort('name')">
+            <button type="button" class="sort" [attr.data-dir]="sortIcon('name')" (click)="sortBy('name')">Nome</button>
+          </th>
+          <th>Tipo</th>
+          <th>Stato</th>
+          <th>Registro GS1</th>
+          <th class="col-date" [attr.aria-sort]="ariaSort('modified')">
+            <button type="button" class="sort" [attr.data-dir]="sortIcon('modified')" (click)="sortBy('modified')">Data modifica</button>
+          </th>
+          <th class="col-actions"><span class="visually-hidden">Azioni</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (g of visible(); track g.gln) {
+          <tr>
+            <td class="col-code"><button type="button" class="code" (click)="open(g)">{{ g.gln }}</button></td>
+            <td>
+              <span class="name">{{ g.name }}</span>
+              @if (g.address) {
+                <span class="place">{{ g.address.city }} ({{ g.address.province }})</span>
+              }
+            </td>
+            <td>
+              <span [class]="typeClass(g.type)">
+                <app-icon [name]="info[g.type].icon" [size]="15" [stroke]="1.9" />{{ g.type }}
+              </span>
+            </td>
+            <td><span [class]="statusClass(g)">{{ g.status }}</span></td>
+            <td><app-registry-badge [state]="g.registry" /></td>
+            <td class="col-date">{{ date(g.modified) }}</td>
+            <td class="col-actions">
+              <button type="button" class="btn-row" (click)="open(g)">
+                {{ g.status === 'Bozza' ? 'Completa' : 'Visualizza' }}<span class="visually-hidden"> {{ g.name }}</span>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="empty">Nessuna sede o località corrisponde alla ricerca o ai filtri.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    </div>
+
+    <div class="pager">
+      <span>
+        Elementi da {{ filtered().length ? page() * pageSize() + 1 : 0 }} a
+        {{ (page() + 1) * pageSize() > filtered().length ? filtered().length : (page() + 1) * pageSize() }} di
+        {{ filtered().length }}
+      </span>
+      <span class="pages">
+        <button type="button" [disabled]="page() === 0" (click)="page.set(page() - 1)">Precedente</button>
+        @for (p of [].constructor(pageCount()); track $index) {
+          <button type="button" class="num" [class.on]="$index === page()" [attr.aria-current]="$index === page() ? 'page' : null" (click)="page.set($index)">
+            {{ $index + 1 }}
+          </button>
+        }
+        <button type="button" [disabled]="page() >= pageCount() - 1" (click)="page.set(page() + 1)">Successivo</button>
+      </span>
+    </div>
+  </div>
+
+  <aside class="filters" aria-label="Filtri">
+    <div class="filters-head">
+      <span>Filtri attivi: {{ activeFilters() }}</span>
+      <button type="button" class="clear" [disabled]="!activeFilters()" (click)="clearFilters()">Pulisci tutto</button>
+    </div>
+    @for (g of facets(); track g.id) {
+      <h2 class="facet-title">{{ g.label }}</h2>
+      <ul class="facet">
+        @for (i of g.items; track i.value) {
+          <li>
+            <button type="button" [class.on]="isOn(g.id, i.value)" [attr.aria-pressed]="isOn(g.id, i.value)" (click)="toggleFilter(g.id, i.value)">
+              {{ i.value }}
+              <span class="count">{{ i.count }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </aside>
+</div>

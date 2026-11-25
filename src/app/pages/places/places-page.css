@@ -1,0 +1,240 @@
+/* Specifici di Sedi e località; il resto viene da products-page.css, per coerenza con Prodotti. */
+
+.identity {
+  min-width: 0;
+}
+
+.lead {
+  margin-top: 6px;
+  color: var(--gs1-blue);
+  font-size: 15px;
+}
+
+.link-inline {
+  margin-left: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gs1-link);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---- Introduzione ---- */
+
+.intro {
+  position: relative;
+  margin-bottom: 20px;
+  padding: 22px 26px 24px;
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-top: 3px solid var(--gs1-blue);
+}
+
+.intro h2 {
+  padding-right: 120px;
+  color: var(--gs1-blue);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.intro-lead {
+  max-width: 860px;
+  margin-top: 8px;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.intro-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--gs1-blue);
+  background: #fff;
+  color: var(--gs1-blue);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.intro-close:hover {
+  background: #eef3f9;
+}
+
+.uses {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.uses li {
+  display: flex;
+  gap: 12px;
+  font-size: 13.5px;
+}
+
+.uses strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text-strong);
+}
+
+.use-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #eef3f9;
+  color: var(--gs1-blue);
+}
+
+.types-title {
+  margin: 22px 0 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
+  color: var(--gs1-blue);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.types {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.types li {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 14px;
+  background: #f6f8fb;
+  font-size: 12.5px;
+}
+
+.types app-icon {
+  color: var(--gs1-blue);
+}
+
+.types strong {
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.types .ex {
+  color: var(--muted);
+}
+
+/* ---- Avviso tipi da specificare ---- */
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: #fff7e6;
+  border: 1px solid #f3cf87;
+  color: #6b4a00;
+  font-size: 13.5px;
+}
+
+.notice p {
+  flex: 1;
+}
+
+.notice .btn {
+  min-height: 34px;
+}
+
+/* ---- Tabella ---- */
+
+/* Su schermi stretti la tabella scorre dentro il pannello, senza allargare la pagina. */
+.table-scroll {
+  position: relative;
+  overflow-x: auto;
+}
+
+.list {
+  min-width: 0;
+}
+
+.name {
+  display: block;
+  color: var(--text-strong);
+}
+
+.place {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.gln-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-strong);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.gln-type app-icon {
+  color: var(--gs1-blue);
+}
+
+.gln-type.todo {
+  color: #8a5a00;
+  font-weight: 600;
+}
+
+.gln-type.todo app-icon {
+  color: #b77400;
+}
+
+@media (max-width: 1100px) {
+  .types {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .uses {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .search,
+  .search input {
+    width: 100%;
+    min-width: 0;
+  }
+  .intro h2 {
+    padding-right: 0;
+    padding-top: 40px;
+  }
+  .types {
+    grid-template-columns: 1fr;
+  }
+  .notice {
+    flex-wrap: wrap;
+  }
+}

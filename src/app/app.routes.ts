@@ -24,6 +24,26 @@ export const routes: Routes = [
     title: 'Prodotti a peso fisso · Codifico+',
     loadComponent: () => import('./pages/products/products-page').then((m) => m.ProductsPage),
   },
+  {
+    path: 'sedi-localita',
+    title: 'Sedi e località · Codifico+',
+    loadComponent: () => import('./pages/places/places-page').then((m) => m.PlacesPage),
+  },
+  {
+    path: 'sedi-localita/nuova',
+    title: 'Nuova sede o località · Codifico+',
+    loadComponent: () => import('./pages/places/place-form-page').then((m) => m.PlaceFormPage),
+  },
+  {
+    path: 'sedi-localita/:gln',
+    title: 'Sede o località · Codifico+',
+    loadComponent: () => import('./pages/places/place-page').then((m) => m.PlacePage),
+  },
+  {
+    path: 'sedi-localita/:gln/modifica',
+    title: 'Modifica sede o località · Codifico+',
+    loadComponent: () => import('./pages/places/place-form-page').then((m) => m.PlaceFormPage),
+  },
   { path: 'prodotti/:gtin', pathMatch: 'full', redirectTo: 'prodotti/:gtin/base' },
   {
     path: 'prodotti/:gtin/:tab',

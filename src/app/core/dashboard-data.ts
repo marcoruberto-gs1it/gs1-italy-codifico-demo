@@ -1,5 +1,6 @@
 import { DEMO_PRODUCTS, MAIN_PRODUCT } from './demo-data';
 import { checkDigit } from './gs1';
+import { GlnType } from './gln-data';
 
 /**
  * Dati di esempio della dashboard, tutti in un punto. I conteggi non sono scritti a mano: si
@@ -38,12 +39,6 @@ export interface CatalogItem {
   /** Solo per i prodotti non demo: tipologie dei link attivi; vuoto = senza Digital Link. */
   linkTypes: string[];
 }
-
-/**
- * Tipi di GLN in parole semplici (nel GS1: entità legale, ubicazione fisica, funzione).
- * Nel menu i GLN sono "Sedi e località", come i GTIN sono "Prodotti".
- */
-export type GlnType = 'Azienda' | 'Luogo fisico' | 'Reparto o funzione';
 
 export interface Gln {
   gln: string;
@@ -130,7 +125,11 @@ export interface Scenario {
   company: string;
   prefixes: Prefix[];
   catalog: CatalogItem[];
-  glns: Gln[];
+  /**
+   * Quali sedi e località mostra la dashboard (vengono da GlnStore, come la sezione dedicata):
+   * tutte, oppure solo il GLN dell'azienda (azienda nuova).
+   */
+  glnScope: 'tutti' | 'azienda';
   changeRequests: ChangeRequest[];
   variableRequests: VariableWeightRequest[];
   /** Compilazione degli attributi sui prodotti a peso fisso (stesso totale del catalogo). */
@@ -138,13 +137,6 @@ export interface Scenario {
   /** Assente = statistiche non ancora disponibili. */
   stats?: VisitStats;
 }
-
-/** Definizioni brevi, per i tooltip. */
-export const GLN_TYPE_INFO: Record<GlnType, string> = {
-  Azienda: 'Il codice che identifica la tua azienda come soggetto giuridico, ad esempio nelle fatture elettroniche.',
-  'Luogo fisico': 'Un luogo della tua azienda, ad esempio un magazzino, uno stabilimento o un punto vendita.',
-  'Reparto o funzione': 'Un ufficio o un reparto, ad esempio l’ufficio acquisti o l’amministrazione.',
-};
 
 export const REGISTRY_INFO =
   'Il registro GS1 rende i dati di base dei tuoi codici verificabili dai partner commerciali di tutto il mondo.';
@@ -251,32 +243,6 @@ const demoItems = (statuses: CatalogStatus[]): CatalogItem[] =>
     linkTypes: [],
   }));
 
-/* ---- GLN ------------------------------------------------------------------------------------- */
-
-const gln = (ref: number, description: string, type: GlnType, published: boolean, modified: string): Gln => ({
-  gln: code13(P_GLN.code, ref),
-  description,
-  type,
-  published,
-  modified,
-});
-
-const LEGAL_ENTITY = gln(0, 'GS1 Italy - sede legale', 'Azienda', true, '2024-03-12');
-
-const ALL_GLNS: Gln[] = [
-  LEGAL_ENTITY,
-  gln(11, 'Sede operativa di Milano', 'Luogo fisico', true, '2024-03-12'),
-  gln(12, 'Magazzino centrale', 'Luogo fisico', true, '2024-09-30'),
-  gln(13, 'Magazzino Sud', 'Luogo fisico', true, '2025-02-17'),
-  gln(14, 'Stabilimento di produzione', 'Luogo fisico', true, '2025-06-04'),
-  gln(15, 'Punto vendita di Roma', 'Luogo fisico', true, '2026-05-21'),
-  gln(16, 'Punto vendita di Torino', 'Luogo fisico', false, '2026-10-14'),
-  gln(21, 'Ufficio acquisti', 'Reparto o funzione', true, '2025-01-09'),
-  gln(22, 'Amministrazione - ricezione fatture', 'Reparto o funzione', false, '2026-08-26'),
-];
-
-/* ---- Scenari --------------------------------------------------------------------------------- */
-
 /* ---- Richieste e completezza ----------------------------------------------------------------- */
 
 const WHY = {
@@ -308,7 +274,7 @@ const B: Scenario = {
   company: 'GS1 Italy',
   prefixes: [P_MASTER, P_EXAMPLES, P_EXTRA, P_GLN],
   catalog: ACTIVE_CATALOG,
-  glns: ALL_GLNS,
+  glnScope: 'tutti',
   // Richieste sui prodotti della demo: si aprono dalla dashboard.
   changeRequests: [
     { gtin: '8032089002028', description: 'Spaghetti di semola di grano duro 500 g', sent: '2026-11-20T10:30', status: 'Da integrare' },
@@ -338,7 +304,7 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
         linkTypes: [],
       },
     ],
-    glns: [LEGAL_ENTITY],
+    glnScope: 'azienda',
     changeRequests: [],
     variableRequests: [],
     attributes: attributes(2, [1, 1, 0, 0.5, 0.5, 0]),

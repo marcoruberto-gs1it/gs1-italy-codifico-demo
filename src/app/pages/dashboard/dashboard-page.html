@@ -467,10 +467,10 @@
               <tbody>
                 @for (g of m.recentGlns(); track g.gln) {
                   <tr>
-                    <td><button type="button" class="code" (click)="notInDemo()">{{ g.gln }}</button></td>
+                    <td><a class="code" [routerLink]="['/sedi-localita', g.gln]">{{ g.gln }}</a></td>
                     <td class="desc">{{ g.description }}</td>
                     <td>
-                      <app-tip [tipId]="'tip-type-' + g.gln" [text]="glnInfo[g.type]">
+                      <app-tip [tipId]="'tip-type-' + g.gln" [text]="glnInfo[g.type].short">
                         <span class="badge type wide" tabindex="0" [attr.aria-describedby]="'tip-type-' + g.gln">{{ g.type }}</span>
                       </app-tip>
                     </td>
@@ -483,18 +483,16 @@
                     </td>
                     <td class="num">{{ date(g.modified) }}</td>
                     <td class="actions">
-                      <button type="button" class="row-toggle" [attr.aria-label]="'Altre azioni per ' + g.gln" (click)="notInDemo()">
-                        <app-icon name="chevron-down" [size]="16" [stroke]="2" />
-                      </button>
+                      <a class="row-open" [routerLink]="['/sedi-localita', g.gln]">Apri<span class="visually-hidden"> {{ g.description }}</span></a>
                     </td>
                   </tr>
                 }
               </tbody>
             </table></div>
             <div class="block-actions">
-              <button type="button" class="link-btn" (click)="notInDemo()">
+              <a routerLink="/sedi-localita">
                 Vedi tutte le sedi e località <app-icon name="arrow-right" [size]="14" [stroke]="2" />
-              </button>
+              </a>
             </div>
           }
         }
@@ -584,7 +582,7 @@
         <div class="le">
           <p class="le-label">
             Codice GLN della tua azienda
-            <app-tip tipId="tip-le" [text]="glnInfo['Azienda']" class="end">
+            <app-tip tipId="tip-le" [text]="glnInfo['Azienda'].short" class="end">
               <button type="button" class="info-btn" aria-label="Cos’è il codice GLN dell’azienda?" aria-describedby="tip-le">
                 <app-icon name="info" [size]="15" [stroke]="2" />
               </button>
@@ -610,9 +608,9 @@
           </li>
         }
       </ul>
-      <button type="button" class="link-btn" (click)="notInDemo()">
+      <a class="side-more" routerLink="/sedi-localita">
         Gestisci sedi e località <app-icon name="arrow-right" [size]="14" [stroke]="2" />
-      </button>
+      </a>
     </section>
 
     <section class="card side-card" aria-labelledby="quick-title">
@@ -685,8 +683,8 @@
           <li>
             <app-icon name="globe" [size]="20" [stroke]="1.8" />
             <span>
-              <button type="button" class="res-link" (click)="notInDemo()">Tutorial sedi e località</button>
-              Come crearle e pubblicarle sul registro GS1
+              <button type="button" class="res-link" (click)="openPlacesIntro()">Cosa sono e a cosa servono</button>
+              I tipi, gli usi e come pubblicarle sul registro GS1
             </span>
           </li>
         </ul>

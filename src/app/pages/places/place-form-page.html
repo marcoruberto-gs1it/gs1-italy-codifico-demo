@@ -1,0 +1,246 @@
+<div class="page-head">
+  <div class="identity">
+    <nav class="crumbs" aria-label="Percorso">
+      <a routerLink="/sedi-localita">Sedi e località</a>
+      <span aria-hidden="true">›</span>
+      <span aria-current="page">{{ mode() === 'new' ? 'Nuova' : 'Modifica' }}</span>
+    </nav>
+    <h1>
+      @if (mode() === 'new') {
+        Nuova sede o località
+      } @else {
+        Modifica GLN {{ gln() }}
+      }
+    </h1>
+    <p class="subtitle">
+      @if (mode() === 'new') {
+        Il codice GLN lo assegna Codifico: tu indichi cosa identifica e dove si trova.
+      } @else {
+        {{ existing()?.name }}
+      }
+    </p>
+  </div>
+</div>
+
+<form class="page-body form" novalidate (submit)="$event.preventDefault(); submit()">
+  @if (errorList().length) {
+    <div class="error-summary" id="form-errors" tabindex="-1" role="alert" aria-labelledby="err-title">
+      <h2 id="err-title">Controlla {{ errorList().length === 1 ? 'questo campo' : 'questi ' + errorList().length + ' campi' }}</h2>
+      <ul>
+        @for (e of errorList(); track e[0]) {
+          <li><a href="#" (click)="$event.preventDefault(); focusField(e[0])">{{ fieldLabels[e[0]] }}: {{ e[1] }}</a></li>
+        }
+      </ul>
+    </div>
+  }
+
+  <!-- 1. Cosa vuoi identificare -->
+  <fieldset class="step" [attr.aria-invalid]="!!errors().type">
+    <legend><span class="step-n" aria-hidden="true">1</span> Cosa vuoi identificare?</legend>
+    @if (typeEditable()) {
+      @if (existing()?.type === 'Da specificare') {
+        <p class="step-help">Questo GLN è stato creato senza tipo. Scegli quello giusto: i partner lo useranno di conseguenza.</p>
+      }
+      <div class="type-grid">
+        @for (t of types; track t) {
+          <label class="type-card" [class.on]="type() === t">
+            <input type="radio" name="gln-type" [value]="t" [checked]="type() === t" (change)="type.set(t)" />
+            <app-icon [name]="info[t].icon" [size]="24" [stroke]="1.7" />
+            <strong>{{ t }}</strong>
+            <span>{{ info[t].short }}</span>
+            <span class="ex">Per esempio: {{ info[t].examples.join(', ') }}</span>
+          </label>
+        }
+      </div>
+      @if (errors().type) {
+        <p class="field-error"><app-icon name="alert-circle" [size]="14" [stroke]="2" /> {{ errors().type }}</p>
+      }
+    } @else if (type(); as t) {
+      <p class="type-fixed">
+        <app-icon [name]="info[t].icon" [size]="20" [stroke]="1.8" />
+        <strong>{{ t }}</strong>
+        <span class="hint">Il tipo non si cambia dopo l’attivazione. Se ti serve un tipo diverso, crea una nuova sede o località.</span>
+      </p>
+    }
+  </fieldset>
+
+  @if (type(); as t) {
+    <!-- 2. Dati -->
+    <fieldset class="step">
+      <legend><span class="step-n" aria-hidden="true">2</span> Come si chiama e dove si trova</legend>
+
+      <div class="field">
+        <label for="f-name">Nome <span class="req" aria-hidden="true">*</span></label>
+        <p class="field-hint" id="h-name">Il nome con cui clienti e fornitori lo riconoscono, ad esempio “Magazzino di Lodi”.</p>
+        <input
+          id="f-name"
+          type="text"
+          required
+          autocomplete="off"
+          [attr.aria-describedby]="errors().name ? 'h-name e-name' : 'h-name'"
+          [attr.aria-invalid]="!!errors().name"
+          [value]="name()"
+          (input)="name.set($any($event.target).value)"
+        />
+        @if (errors().name) {
+          <p class="field-error" id="e-name"><app-icon name="alert-circle" [size]="14" [stroke]="2" /> {{ errors().name }}</p>
+        }
+      </div>
+
+      @if (t !== 'Azienda') {
+        <div class="field">
+          <label for="f-parent">Fa parte di</label>
+          <p class="field-hint" id="h-parent">Collega il luogo alla tua azienda o a un altro luogo: ad esempio un furgone al suo magazzino.</p>
+          <span class="select">
+            <select id="f-parent" aria-describedby="h-parent" (change)="parent.set($any($event.target).value)">
+              <option value="" [selected]="!parent()">Nessuno</option>
+              @for (p of parents(); track p.gln) {
+                <option [value]="p.gln" [selected]="parent() === p.gln">{{ p.name }} ({{ p.type }})</option>
+              }
+            </select>
+          </span>
+        </div>
+      }
+
+      @if (addressRule() !== 'non serve') {
+        <div class="address" role="group" aria-labelledby="addr-title">
+          <h3 id="addr-title">
+            Indirizzo
+            @if (addressRule() === 'facoltativo') {
+              <span class="opt">(facoltativo)</span>
+            }
+          </h3>
+          <div class="grid">
+            <div class="field wide">
+              <label for="f-street">Via e numero civico @if (addressRule() === 'obbligatorio') {<span class="req" aria-hidden="true">*</span>}</label>
+              <input
+                id="f-street"
+                type="text"
+                autocomplete="address-line1"
+                [attr.aria-invalid]="!!errors().street"
+                [attr.aria-describedby]="errors().street ? 'e-street' : null"
+                [value]="street()"
+                (input)="street.set($any($event.target).value)"
+              />
+              @if (errors().street) {
+                <p class="field-error" id="e-street"><app-icon name="alert-circle" [size]="14" [stroke]="2" /> {{ errors().street }}</p>
+              }
+            </div>
+            <div class="field">
+              <label for="f-zip">CAP @if (addressRule() === 'obbligatorio') {<span class="req" aria-hidden="true">*</span>}</label>
+              <input
+                id="f-zip"
+                type="text"
+                inputmode="numeric"
+                autocomplete="postal-code"
+                [attr.aria-invalid]="!!errors().zip"
+                [attr.aria-describedby]="errors().zip ? 'e-zip' : null"
+                [value]="zip()"
+                (input)="zip.set($any($event.target).value)"
+              />
+              @if (errors().zip) {
+                <p class="field-error" id="e-zip"><app-icon name="alert-circle" [size]="14" [stroke]="2" /> {{ errors().zip }}</p>
+              }
+            </div>
+            <div class="field">
+              <label for="f-city">Comune @if (addressRule() === 'obbligatorio') {<span class="req" aria-hidden="true">*</span>}</label>
+              <input
+                id="f-city"
+                type="text"
+                autocomplete="address-level2"
+                [attr.aria-invalid]="!!errors().city"
+                [attr.aria-describedby]="errors().city ? 'e-city' : null"
+                [value]="city()"
+                (input)="city.set($any($event.target).value)"
+              />
+              @if (errors().city) {
+                <p class="field-error" id="e-city"><app-icon name="alert-circle" [size]="14" [stroke]="2" /> {{ errors().city }}</p>
+              }
+            </div>
+            <div class="field">
+              <label for="f-province">Provincia @if (addressRule() === 'obbligatorio' && country() === 'Italia') {<span class="req" aria-hidden="true">*</span>}</label>
+              <input
+                id="f-province"
+                type="text"
+                maxlength="2"
+                autocomplete="address-level1"
+                [attr.aria-invalid]="!!errors().province"
+                [attr.aria-describedby]="errors().province ? 'e-province' : null"
+                [value]="province()"
+                (input)="province.set($any($event.target).value)"
+              />
+              @if (errors().province) {
+                <p class="field-error" id="e-province"><app-icon name="alert-circle" [size]="14" [stroke]="2" /> {{ errors().province }}</p>
+              }
+            </div>
+            <div class="field">
+              <label for="f-country">Nazione</label>
+              <span class="select">
+                <select id="f-country" autocomplete="country-name" (change)="country.set($any($event.target).value)">
+                  @for (c of countries; track c) {
+                    <option [value]="c" [selected]="country() === c">{{ c }}</option>
+                  }
+                </select>
+              </span>
+            </div>
+          </div>
+        </div>
+      } @else {
+        <p class="step-help">L’indirizzo non serve: un {{ t.toLowerCase() }} non ha un indirizzo fisso.</p>
+      }
+
+      <div class="roles" role="group" aria-labelledby="roles-title" aria-describedby="roles-hint">
+        <h3 id="roles-title">Ruoli verso i partner <span class="opt">(facoltativo)</span></h3>
+        <p class="field-hint" id="roles-hint">A cosa serve questo GLN per clienti e fornitori. Puoi sceglierne più di uno.</p>
+        <div class="role-list">
+          @for (r of roles; track r) {
+            <label class="role" [class.on]="selectedRoles().includes(r)">
+              <input type="checkbox" [checked]="selectedRoles().includes(r)" (change)="toggleRole(r)" />
+              {{ r }}
+            </label>
+          }
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- 3. Codice e registro -->
+    <fieldset class="step">
+      <legend><span class="step-n" aria-hidden="true">3</span> Codice e pubblicazione</legend>
+      <div class="code-box">
+        <span class="code-label">{{ mode() === 'new' ? 'Codice GLN che verrà assegnato' : 'Codice GLN' }}</span>
+        <span class="code-value">{{ code() }}</span>
+        <span class="hint">Prefisso della tua azienda {{ prefix }}, numero successivo libero e cifra di controllo.</span>
+      </div>
+      @if (mode() !== 'active') {
+        <label class="check">
+          <input type="checkbox" [checked]="publish()" (change)="publish.set($any($event.target).checked)" />
+          <span>
+            <strong>Pubblica sul registro GS1 dopo l’attivazione</strong>
+            <span class="hint">Così clienti, fornitori ed enti di certificazione possono verificarlo con Verified by GS1. Puoi cambiarlo quando vuoi.</span>
+          </span>
+        </label>
+      }
+    </fieldset>
+  }
+
+  <!-- Azioni: una sola principale. -->
+  <div class="actions">
+    <a class="btn-text" [routerLink]="cancelLink()">Annulla</a>
+    @if (mode() !== 'active') {
+      <button type="button" class="btn btn-secondary" (click)="saveDraft()">Salva come bozza</button>
+    }
+    <button type="submit" class="btn btn-primary">
+      @switch (mode()) {
+        @case ('new') {
+          Crea e attiva
+        }
+        @case ('draft') {
+          Attiva
+        }
+        @default {
+          Salva le modifiche
+        }
+      }
+    </button>
+  </div>
+</form>

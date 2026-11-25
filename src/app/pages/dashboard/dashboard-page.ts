@@ -2,7 +2,9 @@ import { formatNumber } from '../../core/format';
 import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { GLN_TYPE_INFO, parseScenario } from '../../core/dashboard-data';
+import { parseScenario } from '../../core/dashboard-data';
+import { GLN_TYPE_INFO } from '../../core/gln-data';
+import { GlnStore } from '../../core/gln-store';
 import { Meter, Part, SegmentedBar, Sparkline, VIZ } from '../../ui/charts';
 import { HelpPanel } from '../../ui/help-panel';
 import { Icon } from '../../ui/icon';
@@ -49,6 +51,7 @@ const USER_KEY = 'mario.rossi';
 export class DashboardPage {
   protected m = inject(DashboardModel);
   private toasts = inject(Toasts);
+  private places = inject(GlnStore);
   private router = inject(Router);
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
   private injector = inject(Injector);
@@ -256,10 +259,20 @@ export class DashboardPage {
     const forms: Record<string, [string, string]> = {
       Azienda: ['azienda', 'aziende'],
       'Luogo fisico': ['luogo fisico', 'luoghi fisici'],
+      'Luogo mobile': ['luogo mobile', 'luoghi mobili'],
+      'Luogo digitale': ['luogo digitale', 'luoghi digitali'],
       'Reparto o funzione': ['reparto o funzione', 'reparti o funzioni'],
+      'Da specificare': ['da specificare', 'da specificare'],
     };
     const [one, many] = forms[type] ?? [type, type];
     return this.plural(n, one, many);
+  }
+
+  /** Dalla Guida: apre Sedi e località con l'introduzione "Cosa sono e a cosa servono". */
+  protected openPlacesIntro(): void {
+    this.places.introClosed.set(false);
+    this.helpOpen.set(false);
+    void this.router.navigate(['/sedi-localita']);
   }
 
   protected notInDemo(): void {

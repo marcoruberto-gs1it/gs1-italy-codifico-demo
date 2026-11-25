@@ -1,7 +1,9 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { generatedLinks } from '../../core/demo-data';
 import { DemoStore } from '../../core/demo-store';
-import { CatalogItem, Gln, GlnType, SCENARIOS, ScenarioId, DEFAULT_SCENARIO } from '../../core/dashboard-data';
+import { CatalogItem, Gln, SCENARIOS, ScenarioId, DEFAULT_SCENARIO } from '../../core/dashboard-data';
+import { GLN_TYPES, GlnType } from '../../core/gln-data';
+import { GlnStore } from '../../core/gln-store';
 import { linkTypeLabel } from '../../core/vocabulary';
 
 /** Un prodotto del catalogo con il suo stato Digital Link, già calcolato. */
@@ -21,7 +23,7 @@ const CONTENT_INDICATORS = [
   { type: 'instructions', label: 'Istruzioni d’uso' },
 ] as const;
 
-const GLN_TYPES: GlnType[] = ['Azienda', 'Luogo fisico', 'Reparto o funzione'];
+const SUMMARY_TYPES: GlnType[] = [...GLN_TYPES, 'Da specificare'];
 
 /**
  * Tutti i numeri della dashboard, ricavati dallo scenario e dallo store della demo.
@@ -32,6 +34,7 @@ const GLN_TYPES: GlnType[] = ['Azienda', 'Luogo fisico', 'Reparto o funzione'];
 @Injectable()
 export class DashboardModel {
   private store = inject(DemoStore);
+  private places = inject(GlnStore);
 
   readonly scenarioId = signal<ScenarioId>(DEFAULT_SCENARIO);
   readonly scenario = computed(() => SCENARIOS[this.scenarioId()]);
@@ -105,23 +108,37 @@ export class DashboardModel {
 
   /* ---- GLN ---- */
 
-  readonly glns = computed<Gln[]>(() => [...this.scenario().glns].sort((a, b) => b.modified.localeCompare(a.modified)));
+  /** Le sedi e località, dallo stesso archivio della sezione dedicata (le bozze escluse). */
+  private glnList = computed<Gln[]>(() =>
+    this.places
+      .all()
+      .filter((g) => g.status !== 'Bozza' && (this.scenario().glnScope === 'tutti' || g.type === 'Azienda'))
+      .map((g) => ({
+        gln: g.gln,
+        description: g.name,
+        type: g.type,
+        published: g.registry === 'Visibile ai partner',
+        modified: g.modified,
+      })),
+  );
+
+  readonly glns = computed<Gln[]>(() => [...this.glnList()].sort((a, b) => b.modified.localeCompare(a.modified)));
 
   readonly glnSummary = computed(() => {
-    const all = this.scenario().glns;
+    const all = this.glnList();
     return {
       total: all.length,
       published: all.filter((g) => g.published).length,
-      byType: GLN_TYPES.map((type) => ({ type, count: all.filter((g) => g.type === type).length })).filter((t) => t.count),
+      byType: SUMMARY_TYPES.map((type) => ({ type, count: all.filter((g) => g.type === type).length })).filter((t) => t.count),
     };
   });
 
-  readonly legalEntity = computed(() => this.scenario().glns.find((g) => g.type === 'Azienda') ?? null);
+  readonly legalEntity = computed(() => this.glnList().find((g) => g.type === 'Azienda') ?? null);
 
   /** Prefissi con l'utilizzo calcolato da catalogo e GLN. */
   readonly prefixes = computed(() =>
     this.scenario().prefixes.map((p) => {
-      const codes = p.use === 'gtin' ? this.catalog().map((c) => c.gtin) : this.scenario().glns.map((g) => g.gln);
+      const codes = p.use === 'gtin' ? this.catalog().map((c) => c.gtin) : this.glnList().map((g) => g.gln);
       return { ...p, used: codes.filter((c) => c.startsWith(p.code)).length };
     }),
   );

@@ -661,6 +661,17 @@ h1 {
   border: 1px solid var(--url-box-border);
 }
 
+.row-open {
+  font-weight: 600;
+}
+
+.side-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
 .le-label {
   display: flex;
   align-items: center;
