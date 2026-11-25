@@ -155,6 +155,167 @@
 
 <div class="layout">
   <div class="main-col">
+    <!-- Riga di stato: "a che punto sono?". Tre card con la stessa struttura. -->
+    <section class="status-row" aria-labelledby="status-title">
+      <h2 id="status-title" class="visually-hidden">A che punto sei</h2>
+
+      <!-- Prodotti -->
+      <article class="stat card" aria-labelledby="stat-products">
+        <h3 id="stat-products" class="stat-title">Prodotti a peso fisso</h3>
+        <p class="stat-main">
+          <span class="stat-num">{{ num(m.products().total) }}</span>
+          <span class="stat-of">su {{ num(m.products().capacity) }} codici disponibili</span>
+        </p>
+        <div
+          class="meter"
+          role="meter"
+          aria-label="Codici usati sui prefissi"
+          aria-valuemin="0"
+          [attr.aria-valuemax]="m.products().capacity"
+          [attr.aria-valuenow]="m.products().total"
+          [attr.aria-valuetext]="num(m.products().total) + ' su ' + num(m.products().capacity)"
+        >
+          <span [style.width]="barWidth(m.products().saturation)"></span>
+        </div>
+        <p class="stat-detail">
+          @if (m.products().drafts) {
+            <a routerLink="/prodotti" [queryParams]="{ stato: 'bozza' }">
+              {{ plural(m.products().drafts, 'in bozza', 'in bozza') }} da finalizzare
+            </a>
+          } @else {
+            Nessuna bozza da finalizzare
+          }
+        </p>
+        <div class="stat-action">
+          <button type="button" class="btn btn-secondary" (click)="notInDemo()">
+            <app-icon name="plus" [size]="15" [stroke]="2.2" /> Nuovo prodotto
+          </button>
+        </div>
+        <div class="stat-extra"></div>
+      </article>
+
+      <!-- Digital Link -->
+      <article class="stat card" aria-labelledby="stat-dl">
+        <h3 id="stat-dl" class="stat-title">
+          GS1 Digital Link
+          <app-tip tipId="tip-dl" text="Un solo QR code che porta a più contenuti del prodotto: pagina prodotto, allergeni, sostenibilità.">
+            <button type="button" class="info-btn" aria-label="Cos’è il GS1 Digital Link?" aria-describedby="tip-dl">
+              <app-icon name="info" [size]="15" [stroke]="2" />
+            </button>
+          </app-tip>
+        </h3>
+        @if (m.dl().scope) {
+          <p class="stat-main">
+            <span class="stat-num">{{ num(m.dl().withDl) }}</span>
+            <span class="stat-of">su {{ plural(m.dl().scope, 'prodotto finalizzato', 'prodotti finalizzati') }} · {{ pct(m.dl().coverage) }}</span>
+          </p>
+          <div
+            class="meter"
+            role="meter"
+            aria-label="Prodotti finalizzati con GS1 Digital Link"
+            aria-valuemin="0"
+            [attr.aria-valuemax]="m.dl().scope"
+            [attr.aria-valuenow]="m.dl().withDl"
+            [attr.aria-valuetext]="num(m.dl().withDl) + ' su ' + num(m.dl().scope) + ', ' + pct(m.dl().coverage)"
+          >
+            <span [style.width]="barWidth(m.dl().coverage)"></span>
+          </div>
+          <p class="stat-detail">
+            @if (m.dl().without) {
+              <a routerLink="/prodotti" [queryParams]="{ dl: 'senza' }">{{ num(m.dl().without) }} senza Digital Link</a>
+            } @else {
+              Tutti i prodotti finalizzati hanno il Digital Link
+            }
+          </p>
+          <div class="stat-action">
+            <button type="button" class="btn btn-primary" aria-haspopup="dialog" (click)="pickerOpen.set(true)">
+              Configura ora
+            </button>
+          </div>
+        } @else {
+          <p class="stat-main">
+            <span class="stat-num">0</span>
+            <span class="stat-of">prodotti finalizzati</span>
+          </p>
+          <div class="meter" aria-hidden="true"><span style="width: 0"></span></div>
+          <p class="stat-detail">Si usa sui prodotti finalizzati: finalizza il primo per iniziare.</p>
+          <div class="stat-action">
+            <button type="button" class="btn btn-secondary" (click)="helpOpen.set(true)">Scopri come funziona</button>
+          </div>
+        }
+
+        <div class="stat-extra">
+        @if (m.dl().withDl) {
+          <div class="contents">
+            <button
+              type="button"
+              class="contents-toggle"
+              aria-controls="dl-contents"
+              [attr.aria-expanded]="contentsOpen()"
+              (click)="contentsOpen.set(!contentsOpen())"
+            >
+              Contenuti collegati
+              <app-icon name="chevron-down" [size]="15" [stroke]="2" [class.flip]="contentsOpen()" />
+            </button>
+            <ul id="dl-contents" class="contents-list" [hidden]="!contentsOpen()">
+              @for (c of m.dl().contents; track c.label) {
+                <li>
+                  <span>{{ c.label }}</span>
+                  <span class="contents-n">{{ num(c.count) }} su {{ num(m.dl().withDl) }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+        @if (m.dl().scope) {
+          @if (m.stats(); as s) {
+            <p class="scan-line">
+              <strong>{{ num(s.total) }}</strong> scansioni negli ultimi 30 giorni
+              <span class="delta" [class.down]="s.deltaPct < 0">{{ s.deltaPct > 0 ? '+' : '' }}{{ s.deltaPct }}%</span>
+              <span class="scan-top">Più letto: {{ s.topDescription }} ({{ num(s.topScans) }})</span>
+            </p>
+          } @else {
+            <p class="scan-line muted">Statistiche di scansione in arrivo</p>
+          }
+        }
+        </div>
+      </article>
+
+      <!-- GLN -->
+      <article class="stat card" aria-labelledby="stat-gln">
+        <h3 id="stat-gln" class="stat-title">
+          GLN
+          <app-tip tipId="tip-gln" text="Il Global Location Number identifica la tua azienda, i suoi luoghi e le sue funzioni.">
+            <button type="button" class="info-btn" aria-label="Cos’è un GLN?" aria-describedby="tip-gln">
+              <app-icon name="info" [size]="15" [stroke]="2" />
+            </button>
+          </app-tip>
+        </h3>
+        <p class="stat-main">
+          <span class="stat-num">{{ num(m.glnSummary().total) }}</span>
+          <span class="stat-of">
+            @for (g of m.glnSummary().byType; track g.type; let last = $last) {
+              {{ glnTypeLabel(g.type, g.count) }}{{ last ? '' : ' · ' }}
+            }
+          </span>
+        </p>
+        <div class="meter-slot" aria-hidden="true"></div>
+        <p class="stat-detail">
+          {{ num(m.glnSummary().published) }} {{ m.glnSummary().published === 1 ? 'pubblicato' : 'pubblicati' }} sul registro
+          <app-tip tipId="tip-registry" [text]="registryInfo" class="end">
+            <button type="button" class="info-btn" aria-label="Cos’è il registro GS1?" aria-describedby="tip-registry">
+              <app-icon name="info" [size]="15" [stroke]="2" />
+            </button>
+          </app-tip>
+        </p>
+        <div class="stat-action">
+          <button type="button" class="btn btn-secondary" (click)="notInDemo()">
+            <app-icon name="plus" [size]="15" [stroke]="2.2" /> Nuovo GLN
+          </button>
+        </div>
+        <div class="stat-extra"></div>
+      </article>
+    </section>
 
   </div>
 
@@ -187,3 +348,6 @@
   <app-tutorial-modal (closed)="tutorialOpen.set(false)" />
 }
 
+@if (pickerOpen()) {
+  <app-link-product-dialog [rows]="m.finalized()" (closed)="pickerOpen.set(false)" (picked)="pick($event)" />
+}
