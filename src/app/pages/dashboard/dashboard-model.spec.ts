@@ -94,5 +94,6 @@ describe('DashboardModel', () => {
     expect(s.daily).toHaveLength(30);
     expect(s.daily.reduce((a, b) => a + b, 0)).toBe(s.total);
     expect(s.topScans).toBeLessThanOrEqual(s.total);
+    expect(s.byContent.reduce((a, c) => a + c.value, 0)).toBe(s.total);
   });
 });

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { GLN_TYPE_INFO, REGISTRY_INFO, parseScenario } from '../../core/dashboard-data';
+import { GLN_TYPE_INFO, parseScenario } from '../../core/dashboard-data';
 import { Meter, Part, SegmentedBar, Sparkline, VIZ } from '../../ui/charts';
 import { HelpPanel } from '../../ui/help-panel';
 import { Icon } from '../../ui/icon';
@@ -16,7 +16,7 @@ type RecentTab = 'fixed' | 'variable' | 'gln';
 type RequestTab = 'changes' | 'variable';
 
 const DEMO_ONLY = 'Nella demo sono consultabili i prodotti con l’etichetta “Demo”';
-/** Utente della demo: lo stato "Riduci" del banner si salva per utente. */
+/** Utente della demo: gli annunci chiusi si ricordano per utente. */
 const USER_KEY = 'mario.rossi';
 
 /**
@@ -54,7 +54,6 @@ export class DashboardPage {
 
   protected readonly t = TUTORIAL;
   protected readonly glnInfo = GLN_TYPE_INFO;
-  protected readonly registryInfo = REGISTRY_INFO;
 
   protected helpOpen = signal(false);
   protected tutorialOpen = signal(false);
@@ -81,18 +80,31 @@ export class DashboardPage {
     { label: 'In bozza', value: this.m.products().drafts, color: VIZ.s2 },
   ]);
 
-  /** GLN per tipo, nell'ordine fisso della palette. */
-  protected glnParts = computed<Part[]>(() => {
+  /** Prodotti finalizzati con e senza Digital Link: stesso grafico della card Prodotti. */
+  protected dlParts = computed<Part[]>(() => [
+    { label: 'Con Digital Link', value: this.m.dl().withDl, color: VIZ.s1 },
+    { label: 'Senza', value: this.m.dl().without, color: VIZ.s2 },
+  ]);
+
+  /** Scansioni per contenuto aperto; "Altri contenuti" in grigio, come resto. */
+  protected scanParts = computed<Part[]>(() => {
     const colors = [VIZ.s1, VIZ.s2, VIZ.s3];
-    return this.m.glnSummary().byType.map((t, i) => ({ label: t.type, value: t.count, color: colors[i] }));
+    return (this.m.stats()?.byContent ?? []).map((c, i) => ({
+      label: c.label,
+      value: c.value,
+      color: c.other ? VIZ.muted : colors[i % colors.length],
+    }));
   });
 
   /** Un solo annuncio alla volta: benvenuto senza prodotti finalizzati, altrimenti il Digital Link. */
   protected banner = computed<'welcome' | 'dl'>(() => (this.m.dl().scope === 0 ? 'welcome' : 'dl'));
 
-  /** Annunci ridotti a barra dall'utente (localStorage, per utente e per annuncio). */
-  private reduced = signal<string[]>(loadReduced());
-  protected bannerReduced = computed(() => this.reduced().includes(this.banner()));
+  /** Annunci chiusi con "Ho capito" (localStorage, per utente e per annuncio). */
+  private dismissed = signal<string[]>(loadDismissed());
+  protected bannerDismissed = computed(() => this.dismissed().includes(this.banner()));
+  protected bannerTitle = computed(() =>
+    this.banner() === 'dl' ? 'Arriva il GS1 Digital Link' : 'Inizia dal tuo primo prodotto',
+  );
 
   constructor() {
     const route = inject(ActivatedRoute);
@@ -104,15 +116,24 @@ export class DashboardPage {
 
   /* ---- Annunci ---- */
 
-  protected setReduced(value: boolean): void {
+  /** L'utente ha preso atto dell'annuncio: sparisce e resta richiamabile dalla Guida. */
+  protected dismissBanner(): void {
+    this.setDismissed(true);
+    this.toasts.show('Annuncio chiuso. Puoi rivederlo dalla Guida.', 'info');
+    afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>('.guide-btn')?.focus(), {
+      injector: this.injector,
+    });
+  }
+
+  protected restoreBanner(): void {
+    this.setDismissed(false);
+    this.helpOpen.set(false);
+  }
+
+  private setDismissed(value: boolean): void {
     const id = this.banner();
-    this.reduced.update((list) => (value ? [...new Set([...list, id])] : list.filter((x) => x !== id)));
-    saveReduced(this.reduced());
-    // Il pulsante premuto sparisce: il focus passa a quello che lo sostituisce.
-    afterNextRender(
-      () => this.host.nativeElement.querySelector<HTMLElement>(value ? '#banner-expand' : '#banner-reduce')?.focus(),
-      { injector: this.injector },
-    );
+    this.dismissed.update((list) => (value ? [...new Set([...list, id])] : list.filter((x) => x !== id)));
+    saveDismissed(this.dismissed());
   }
 
   protected openVideo(): void {
@@ -129,6 +150,24 @@ export class DashboardPage {
     }
     this.pickerOpen.set(false);
     void this.router.navigate(['/prodotti', row.gtin, 'digital-link']);
+  }
+
+  /** "Vedi l'andamento": porta al grafico nel dettaglio Digital Link. */
+  protected showTrend(): void {
+    const target = this.host.nativeElement.querySelector<HTMLElement>('#trend-title');
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    target?.focus({ preventScroll: true });
+  }
+
+  protected trendStart = computed(() => this.dayLabel(-((this.m.stats()?.daily.length ?? 1) - 1)));
+  protected trendEnd = computed(() => this.dayLabel(0));
+
+  private dayLabel(offset: number): string {
+    const end = this.m.stats()?.end;
+    if (!end) return '';
+    const d = new Date(end + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() + offset);
+    return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', timeZone: 'UTC' });
   }
 
   /* ---- Ultimi codici censiti ---- */
@@ -226,11 +265,11 @@ export class DashboardPage {
   }
 }
 
-const REDUCED_KEY = `codifico-demo:dashboard:annunci-ridotti:${USER_KEY}`;
+const DISMISSED_KEY = `codifico-demo:dashboard:annunci-chiusi:${USER_KEY}`;
 
-function loadReduced(): string[] {
+function loadDismissed(): string[] {
   try {
-    const raw = localStorage.getItem(REDUCED_KEY);
+    const raw = localStorage.getItem(DISMISSED_KEY);
     const list: unknown = raw ? JSON.parse(raw) : [];
     return Array.isArray(list) ? list.filter((x): x is string => typeof x === 'string') : [];
   } catch {
@@ -238,10 +277,10 @@ function loadReduced(): string[] {
   }
 }
 
-function saveReduced(list: string[]): void {
+function saveDismissed(list: string[]): void {
   try {
-    localStorage.setItem(REDUCED_KEY, JSON.stringify(list));
+    localStorage.setItem(DISMISSED_KEY, JSON.stringify(list));
   } catch {
-    // Storage non disponibile: il banner torna esteso al prossimo caricamento.
+    // Storage non disponibile: l'annuncio ricompare al prossimo caricamento.
   }
 }

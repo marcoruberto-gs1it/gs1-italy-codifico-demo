@@ -11,33 +11,11 @@
 </header>
 
 <!-- Area annunci: al massimo un banner alla volta (vedi banner()). -->
-<section class="announce" aria-label="Annunci">
-  @if (bannerReduced()) {
-    <div class="news-bar">
-      <span class="news-pill">{{ banner() === 'dl' ? 'Novità' : 'Benvenuto' }}</span>
-      <strong>{{ banner() === 'dl' ? 'Arriva il GS1 Digital Link' : 'Inizia dal tuo primo prodotto' }}</strong>
-      <button
-        type="button"
-        id="banner-expand"
-        class="link-btn on-dark"
-        aria-expanded="false"
-        aria-controls="banner"
-        (click)="setReduced(false)"
-      >
-        Mostra <app-icon name="chevron-down" [size]="15" [stroke]="2" />
-      </button>
-    </div>
-  } @else {
+@if (!bannerDismissed()) {
+  <section class="announce" aria-label="Annunci">
     <div class="news" id="banner">
-      <button
-        type="button"
-        id="banner-reduce"
-        class="reduce link-btn on-dark"
-        aria-expanded="true"
-        aria-controls="banner"
-        (click)="setReduced(true)"
-      >
-        Riduci <app-icon name="chevron-down" [size]="15" [stroke]="2" class="flip" />
+      <button type="button" class="close-banner" [attr.aria-label]="'Ho capito, chiudi l’annuncio ' + bannerTitle()" (click)="dismissBanner()">
+        Ho capito <app-icon name="close" [size]="16" [stroke]="2" />
       </button>
 
       @if (banner() === 'welcome') {
@@ -150,8 +128,8 @@
         </ol>
       }
     </div>
-  }
-</section>
+  </section>
+}
 
 <div class="layout">
   <div class="main-col">
@@ -202,7 +180,7 @@
             <span class="stat-of">su {{ plural(m.dl().scope, 'prodotto finalizzato', 'prodotti finalizzati') }}</span>
           </p>
           <div class="stat-viz">
-            <app-meter label="Prodotti finalizzati con GS1 Digital Link" [value]="m.dl().withDl" [max]="m.dl().scope" [size]="12" />
+            <app-segmented-bar label="Prodotti finalizzati per GS1 Digital Link" [parts]="dlParts()" />
           </div>
           <p class="stat-detail">
             @if (m.dl().without) {
@@ -221,7 +199,7 @@
             <span class="stat-num">0</span>
             <span class="stat-of">prodotti finalizzati</span>
           </p>
-          <div class="stat-viz"></div>
+          <div class="stat-viz"><div class="viz-empty" aria-hidden="true"></div></div>
           <p class="stat-detail">Si usa sui prodotti finalizzati: finalizza il primo per iniziare.</p>
           <div class="stat-action">
             <button type="button" class="btn btn-secondary" (click)="helpOpen.set(true)">Scopri come funziona</button>
@@ -231,36 +209,46 @@
         <div class="stat-extra"></div>
       </article>
 
-      <!-- GLN -->
-      <article class="stat card" aria-labelledby="stat-gln">
-        <h3 id="stat-gln" class="stat-title">
-          GLN
-          <app-tip tipId="tip-gln" text="Il Global Location Number identifica la tua azienda, i suoi luoghi e le sue funzioni.">
-            <button type="button" class="info-btn" aria-label="Cos’è un GLN?" aria-describedby="tip-gln">
+      <!-- Analytics del Digital Link -->
+      <article class="stat card" aria-labelledby="stat-scan">
+        <h3 id="stat-scan" class="stat-title">
+          Scansioni dei QR code
+          <app-tip
+            tipId="tip-scan"
+            text="Quante volte sono stati inquadrati i QR code GS1 Digital Link dei tuoi prodotti e quali contenuti hanno aperto."
+            class="end"
+          >
+            <button type="button" class="info-btn" aria-label="Cosa sono le scansioni?" aria-describedby="tip-scan">
               <app-icon name="info" [size]="15" [stroke]="2" />
             </button>
           </app-tip>
         </h3>
-        <p class="stat-main">
-          <span class="stat-num">{{ num(m.glnSummary().total) }}</span>
-          <span class="stat-of">per l’azienda, i suoi luoghi e le sue funzioni</span>
-        </p>
-        <div class="stat-viz">
-          <app-segmented-bar label="GLN per tipo" [parts]="glnParts()" />
-        </div>
-        <p class="stat-detail">
-          {{ num(m.glnSummary().published) }} su {{ num(m.glnSummary().total) }} pubblicati sul registro
-          <app-tip tipId="tip-registry" [text]="registryInfo" class="end">
-            <button type="button" class="info-btn" aria-label="Cos’è il registro GS1?" aria-describedby="tip-registry">
-              <app-icon name="info" [size]="15" [stroke]="2" />
-            </button>
-          </app-tip>
-        </p>
-        <div class="stat-action">
-          <button type="button" class="btn btn-secondary" (click)="notInDemo()">
-            <app-icon name="plus" [size]="15" [stroke]="2.2" /> Nuovo GLN
-          </button>
-        </div>
+        @if (m.stats(); as s) {
+          <p class="stat-main">
+            <span class="stat-num">
+              {{ num(s.total) }}
+              <span class="stat-delta" [class.down]="s.deltaPct < 0">
+                {{ s.deltaPct >= 0 ? '▲ +' : '▼ ' }}{{ s.deltaPct }}%
+              </span>
+            </span>
+            <span class="stat-of">negli ultimi 30 giorni, rispetto ai 30 precedenti</span>
+          </p>
+          <div class="stat-viz">
+            <app-segmented-bar label="Scansioni per contenuto aperto" [parts]="scanParts()" />
+          </div>
+          <p class="stat-detail">Più letto: {{ s.topDescription }} ({{ num(s.topScans) }})</p>
+          <div class="stat-action">
+            <button type="button" class="btn btn-secondary" (click)="showTrend()">Vedi l’andamento</button>
+          </div>
+        } @else {
+          <p class="stat-main">
+            <span class="stat-num muted">—</span>
+            <span class="stat-of">statistiche in arrivo</span>
+          </p>
+          <div class="stat-viz"><div class="viz-empty" aria-hidden="true"></div></div>
+          <p class="stat-detail">Qui vedrai quante volte vengono inquadrati i tuoi QR code e quali contenuti aprono.</p>
+          <div class="stat-action"></div>
+        }
         <div class="stat-extra"></div>
       </article>
     </section>
@@ -532,27 +520,21 @@
             </ul>
           </div>
           <div>
-            <h3 class="detail-title">Scansioni del QR code</h3>
+            <h3 class="detail-title" id="trend-title" tabindex="-1">Andamento delle scansioni</h3>
             @if (m.stats(); as s) {
-              <p class="detail-sub">Ultimi 30 giorni</p>
-              <p class="scan-figure">
-                <strong>{{ num(s.total) }}</strong>
-                <span class="delta" [class.down]="s.deltaPct < 0">
-                  {{ s.deltaPct > 0 ? '▲ +' : '▼ ' }}{{ s.deltaPct }}% sui 30 giorni precedenti
-                </span>
-              </p>
+              <p class="detail-sub">Scansioni al giorno, ultimi 30 giorni</p>
               <app-sparkline
                 [values]="s.daily"
                 [end]="s.end"
                 [label]="'Scansioni giornaliere negli ultimi 30 giorni: totale ' + num(s.total) + ', ultimo giorno ' + s.daily[s.daily.length - 1]"
               />
-              <p class="scan-top">Più letto: {{ s.topDescription }} ({{ num(s.topScans) }} scansioni)</p>
+              <p class="trend-axis" aria-hidden="true"><span>{{ trendStart() }}</span><span>{{ trendEnd() }}</span></p>
             } @else {
               <div class="soon">
                 <app-icon name="qrcode" [size]="28" [stroke]="1.6" />
                 <p>
                   <strong>In arrivo</strong>
-                  Qui vedrai quante volte vengono inquadrati i tuoi QR code e quali prodotti sono i più letti.
+                  Qui vedrai quante volte al giorno vengono inquadrati i tuoi QR code.
                 </p>
               </div>
             }
@@ -599,14 +581,22 @@
       <p class="company-name">{{ m.company() }}</p>
       @if (m.legalEntity(); as le) {
         <div class="le">
-          <span class="badge type wide">Entità legale</span>
+          <p class="le-label">
+            GLN dell’entità legale
+            <app-tip tipId="tip-le" [text]="glnInfo['Entità legale']" class="end">
+              <button type="button" class="info-btn" aria-label="Cos’è il GLN dell’entità legale?" aria-describedby="tip-le">
+                <app-icon name="info" [size]="15" [stroke]="2" />
+              </button>
+            </app-tip>
+          </p>
           <div class="le-row">
-            <code class="le-code" aria-label="GLN dell’entità legale">{{ le.gln }}</code>
+            <span class="le-key" aria-hidden="true">GLN</span>
+            <code class="le-code">{{ le.gln }}</code>
             <button type="button" class="btn-icon le-copy" aria-label="Copia il GLN dell’entità legale" (click)="copy(le.gln)">
               <app-icon name="copy" [size]="16" [stroke]="1.9" />
             </button>
           </div>
-          <p class="le-note">Assegnato da GS1 Italy, non modificabile.</p>
+          <p class="le-note">Global Location Number assegnato da GS1 Italy, non modificabile.</p>
         </div>
       }
       <h3 class="side-sub">Prefissi</h3>
@@ -691,6 +681,9 @@
         <button type="button" class="link-btn" aria-haspopup="dialog" (click)="openVideo()">
           <span class="play" aria-hidden="true">▶</span> Guarda il tutorial (3 minuti)
         </button>
+        @if (bannerDismissed()) {
+          <button type="button" class="link-btn" (click)="restoreBanner()">Mostra di nuovo l’annuncio in dashboard</button>
+        }
       </section>
       <section>
         <h3>GLN</h3>

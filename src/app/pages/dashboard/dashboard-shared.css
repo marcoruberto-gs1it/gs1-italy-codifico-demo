@@ -1,0 +1,245 @@
+/*
+ * Elementi comuni della dashboard e dei suoi blocchi (tabelle, badge, tab, link testuali).
+ * Sono qui e non nel CSS del componente per restare entro il budget per componente; il
+ * selettore app-dashboard-page li limita alla dashboard, senza effetti sulle altre pagine.
+ */
+app-dashboard-page {
+  /* Azione testuale: link senza aspetto da pulsante. */
+  .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--gs1-link);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .link-btn:hover {
+    color: var(--gs1-blue);
+  }
+
+  .link-btn.on-dark {
+    color: #fff;
+  }
+
+  .link-btn.on-dark:hover {
+    color: #d6e2f3;
+  }
+
+  .link-btn.on-dark:focus-visible {
+    outline-color: #fff;
+  }
+
+  /* ---- Ultimi codici censiti ----------------------------------------------------------------- */
+
+  .block {
+    padding: 22px 20px 18px;
+  }
+
+  .block-title {
+    color: var(--gs1-blue);
+    font-size: 22px;
+    font-weight: 400;
+  }
+
+  .subtabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 22px;
+    margin-top: 18px;
+    border-bottom: 1px solid #dfe1e1;
+  }
+
+  .subtabs button {
+    padding: 0 0 12px;
+    border: 0;
+    border-bottom: 4px solid transparent;
+    margin-bottom: -1px;
+    background: none;
+    color: var(--gs1-link);
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .subtabs button.on {
+    color: var(--text-strong);
+    border-bottom-color: var(--gs1-blue);
+    font-weight: 600;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  th {
+    padding: 12px 8px 8px;
+    border-bottom: 1px solid #d3d6d6;
+    color: var(--muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 9px 8px;
+    border-bottom: 1px solid #e3e5e5;
+    vertical-align: middle;
+    color: var(--text-strong);
+  }
+
+  .num {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .desc {
+    min-width: 160px;
+  }
+
+  .code {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--gs1-link);
+    font-size: 13.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+
+  .code:hover {
+    text-decoration: underline;
+  }
+
+  /* Badge compatti a larghezza fissa: stato e tipo si allineano in colonna. */
+  .badge {
+    display: inline-block;
+    min-width: 82px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #eef1f4;
+    color: #3f4a55;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .badge.wide {
+    min-width: 118px;
+  }
+
+  .badge.type {
+    background: #eef3f9;
+    color: var(--gs1-blue);
+  }
+
+  .badge.final {
+    background: #e7f6dc;
+    color: #3f7a1a;
+  }
+
+  .badge.draft {
+    background: #e3f0fa;
+    color: #0b5f9c;
+  }
+
+  span.badge[tabindex] {
+    cursor: help;
+  }
+
+  .dl-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none !important;
+  }
+
+  .dl-chip.on {
+    background: #e7f6dc;
+    color: #3f7a1a;
+  }
+
+  .dl-chip.todo {
+    background: #fff;
+    color: var(--gs1-orange-hover);
+    box-shadow: inset 0 0 0 1px var(--gs1-orange);
+  }
+
+  .dl-chip.todo:hover {
+    background: #fff3ee;
+  }
+
+  .reg {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #8a5a00;
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+
+  .reg.on {
+    color: #3f7a1a;
+  }
+
+  .actions {
+    width: 44px;
+    text-align: right;
+  }
+
+  .row-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #c9cccc;
+    background: #fff;
+    color: var(--gs1-orange);
+    cursor: pointer;
+  }
+
+  .row-toggle:hover {
+    border-color: var(--gs1-blue);
+  }
+
+  .block-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    margin-top: 16px;
+  }
+
+  .block-actions > a,
+  .block-actions > .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .empty {
+    padding: 22px 6px 6px;
+    color: var(--muted);
+  }
+}

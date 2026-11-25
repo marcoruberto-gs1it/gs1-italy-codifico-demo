@@ -69,6 +69,8 @@ export interface ScanStats {
   daily: number[];
   /** Ultimo giorno della serie (ISO). */
   end: string;
+  /** Scansioni per contenuto aperto (il totale è `total`); `other` raccoglie il resto. */
+  byContent: { label: string; value: number; other?: boolean }[];
 }
 
 /**
@@ -344,6 +346,12 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
       topScans: 412,
       daily: dailySeries(1284),
       end: '2026-11-24',
+      byContent: [
+        { label: 'Pagina prodotto', value: 732 },
+        { label: 'Sostenibilità', value: 289 },
+        { label: 'Allergeni', value: 167 },
+        { label: 'Altri contenuti', value: 96, other: true },
+      ],
     },
   },
 };
