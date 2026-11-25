@@ -209,16 +209,16 @@
         <div class="stat-extra"></div>
       </article>
 
-      <!-- Analytics del Digital Link -->
-      <article class="stat card" aria-labelledby="stat-scan">
-        <h3 id="stat-scan" class="stat-title">
-          Scansioni dei QR code
+      <!-- Analytics del Digital Link: le visite ai contenuti, non le persone. -->
+      <article class="stat card" aria-labelledby="stat-visits">
+        <h3 id="stat-visits" class="stat-title">
+          Visite ai contenuti
           <app-tip
-            tipId="tip-scan"
-            text="Quante volte sono stati inquadrati i QR code GS1 Digital Link dei tuoi prodotti e quali contenuti hanno aperto."
+            tipId="tip-visits"
+            text="Ogni volta che qualcuno apre i contenuti di un tuo prodotto attraverso il GS1 Digital Link: inquadrando il QR code, toccando un link o da un’app. Se la stessa persona li apre due volte, contano due visite."
             class="end"
           >
-            <button type="button" class="info-btn" aria-label="Cosa sono le scansioni?" aria-describedby="tip-scan">
+            <button type="button" class="info-btn" aria-label="Cosa conta come visita?" aria-describedby="tip-visits">
               <app-icon name="info" [size]="15" [stroke]="2" />
             </button>
           </app-tip>
@@ -234,19 +234,19 @@
             <span class="stat-of">negli ultimi 30 giorni, rispetto ai 30 precedenti</span>
           </p>
           <div class="stat-viz">
-            <app-segmented-bar label="Scansioni per contenuto aperto" [parts]="scanParts()" />
+            <app-segmented-bar label="Visite per contenuto aperto" [parts]="visitParts()" />
           </div>
-          <p class="stat-detail">Più letto: {{ s.topDescription }} ({{ num(s.topScans) }})</p>
+          <p class="stat-detail">Il più visitato: {{ s.topDescription }} ({{ num(s.topScans) }})</p>
           <div class="stat-action">
             <button type="button" class="btn btn-secondary" (click)="showTrend()">Vedi l’andamento</button>
           </div>
         } @else {
           <p class="stat-main">
             <span class="stat-num muted">—</span>
-            <span class="stat-of">statistiche in arrivo</span>
+            <span class="stat-of">dati in arrivo</span>
           </p>
           <div class="stat-viz"><div class="viz-empty" aria-hidden="true"></div></div>
-          <p class="stat-detail">Qui vedrai quante volte vengono inquadrati i tuoi QR code e quali contenuti aprono.</p>
+          <p class="stat-detail">Qui vedrai quante volte vengono aperti i contenuti dei tuoi prodotti e quali.</p>
           <div class="stat-action"></div>
         }
         <div class="stat-extra"></div>
@@ -493,7 +493,7 @@
             </table></div>
             <div class="block-actions">
               <button type="button" class="link-btn" (click)="notInDemo()">
-                Vedi tutti i GLN <app-icon name="arrow-right" [size]="14" [stroke]="2" />
+                Vedi tutte le sedi e località <app-icon name="arrow-right" [size]="14" [stroke]="2" />
               </button>
             </div>
           }
@@ -501,7 +501,7 @@
       </div>
     </section>
 
-    <!-- Digital Link nel dettaglio: cosa collegano i prodotti e quanto vengono scansionati. -->
+    <!-- Digital Link nel dettaglio: cosa collegano i prodotti e come vanno le visite. -->
     @if (m.dl().withDl) {
       <section class="card block" aria-labelledby="dl-detail-title">
         <h2 id="dl-detail-title" class="block-title">GS1 Digital Link nel dettaglio</h2>
@@ -520,13 +520,14 @@
             </ul>
           </div>
           <div>
-            <h3 class="detail-title" id="trend-title" tabindex="-1">Andamento delle scansioni</h3>
+            <h3 class="detail-title" id="trend-title" tabindex="-1">Andamento delle visite</h3>
             @if (m.stats(); as s) {
-              <p class="detail-sub">Scansioni al giorno, ultimi 30 giorni</p>
+              <p class="detail-sub">Visite ai contenuti giorno per giorno, ultimi 30 giorni</p>
               <app-sparkline
                 [values]="s.daily"
                 [end]="s.end"
-                [label]="'Scansioni giornaliere negli ultimi 30 giorni: totale ' + num(s.total) + ', ultimo giorno ' + s.daily[s.daily.length - 1]"
+                unit="visite"
+                [label]="'Visite giornaliere negli ultimi 30 giorni: totale ' + num(s.total) + ', ultimo giorno ' + num(s.daily[s.daily.length - 1])"
               />
               <p class="trend-axis" aria-hidden="true"><span>{{ trendStart() }}</span><span>{{ trendEnd() }}</span></p>
             } @else {
@@ -534,7 +535,7 @@
                 <app-icon name="qrcode" [size]="28" [stroke]="1.6" />
                 <p>
                   <strong>In arrivo</strong>
-                  Qui vedrai quante volte al giorno vengono inquadrati i tuoi QR code.
+                  Qui vedrai, giorno per giorno, quante volte vengono aperti i contenuti dei tuoi prodotti.
                 </p>
               </div>
             }
@@ -575,16 +576,16 @@
     }
   </div>
 
-  <aside class="side-col" aria-label="Azienda, accesso rapido e risorse">
+  <aside class="side-col" aria-label="La tua azienda e accesso rapido">
     <section class="card side-card" aria-labelledby="company-title">
       <h2 id="company-title" class="side-title">La tua azienda</h2>
       <p class="company-name">{{ m.company() }}</p>
       @if (m.legalEntity(); as le) {
         <div class="le">
           <p class="le-label">
-            GLN dell’entità legale
-            <app-tip tipId="tip-le" [text]="glnInfo['Entità legale']" class="end">
-              <button type="button" class="info-btn" aria-label="Cos’è il GLN dell’entità legale?" aria-describedby="tip-le">
+            Codice GLN della tua azienda
+            <app-tip tipId="tip-le" [text]="glnInfo['Azienda']" class="end">
+              <button type="button" class="info-btn" aria-label="Cos’è il codice GLN dell’azienda?" aria-describedby="tip-le">
                 <app-icon name="info" [size]="15" [stroke]="2" />
               </button>
             </app-tip>
@@ -592,11 +593,11 @@
           <div class="le-row">
             <span class="le-key" aria-hidden="true">GLN</span>
             <code class="le-code">{{ le.gln }}</code>
-            <button type="button" class="btn-icon le-copy" aria-label="Copia il GLN dell’entità legale" (click)="copy(le.gln)">
+            <button type="button" class="btn-icon le-copy" aria-label="Copia il codice GLN della tua azienda" (click)="copy(le.gln)">
               <app-icon name="copy" [size]="16" [stroke]="1.9" />
             </button>
           </div>
-          <p class="le-note">Global Location Number assegnato da GS1 Italy, non modificabile.</p>
+          <p class="le-note">Assegnato da GS1 Italy, non modificabile. Si usa ad esempio nelle fatture elettroniche.</p>
         </div>
       }
       <h3 class="side-sub">Prefissi</h3>
@@ -610,7 +611,7 @@
         }
       </ul>
       <button type="button" class="link-btn" (click)="notInDemo()">
-        Gestisci GLN <app-icon name="arrow-right" [size]="14" [stroke]="2" />
+        Gestisci sedi e località <app-icon name="arrow-right" [size]="14" [stroke]="2" />
       </button>
     </section>
 
@@ -621,7 +622,7 @@
         <li><button type="button" (click)="notInDemo()">Gestisci le tue marche <app-icon name="arrow-right" [size]="15" [stroke]="2" /></button></li>
         <li>
           <button type="button" (click)="notInDemo()">
-            Esporta i tuoi dati (prodotti e GLN) <app-icon name="arrow-right" [size]="15" [stroke]="2" />
+            Esporta i tuoi dati (prodotti, sedi e località) <app-icon name="arrow-right" [size]="15" [stroke]="2" />
           </button>
         </li>
         <li>
@@ -633,67 +634,102 @@
       </ul>
     </section>
 
-    <section class="card side-card" aria-labelledby="res-title">
-      <h2 id="res-title" class="side-title">Risorse e aiuto</h2>
-      <ul class="resources">
-        <li>
-          <app-icon name="qrcode" [size]="20" [stroke]="1.8" />
-          <span>
-            <a class="res-link" [href]="t.guide" [attr.download]="t.guideName">
-              Guida al GS1 Digital Link <span class="new-tag">Nuovo</span>
-            </a>
-            PDF, {{ t.guideSize }}: contenuti, lingue e QR code
-          </span>
-        </li>
-        <li>
-          <app-icon name="phone" [size]="20" [stroke]="1.8" />
-          <span>
-            <button type="button" class="res-link" aria-haspopup="dialog" (click)="openVideo()">Video tutorial</button>
-            Il GS1 Digital Link passo per passo
-          </span>
-        </li>
-        <li>
-          <app-icon name="globe" [size]="20" [stroke]="1.8" />
-          <span><button type="button" class="res-link" (click)="notInDemo()">Tutorial GLN</button>Come creare e pubblicare i GLN</span>
-        </li>
-        <li>
-          <app-icon name="help" [size]="20" [stroke]="1.8" />
-          <span><button type="button" class="res-link" (click)="notInDemo()">Help center</button>Domande frequenti e assistenza</span>
-        </li>
-        <li>
-          <app-icon name="bulb" [size]="20" [stroke]="1.8" />
-          <span>
-            <button type="button" class="res-link" (click)="notInDemo()">Academy di GS1 Italy</button>
-            Corsi gratuiti su standard, soluzioni e strumenti GS1
-          </span>
-        </li>
-      </ul>
-    </section>
   </aside>
 </div>
 
 @if (helpOpen()) {
-  <app-help-panel title="Guida alla dashboard" (closed)="helpOpen.set(false)">
+  <app-help-panel title="Guida e assistenza" (closed)="helpOpen.set(false)">
     <div class="help">
-      <section>
-        <h3>GS1 Digital Link</h3>
-        <p>Un solo QR code collega il prodotto a più contenuti: pagina prodotto, allergeni, sostenibilità, in ogni lingua.</p>
-        <button type="button" class="link-btn" aria-haspopup="dialog" (click)="openVideo()">
-          <span class="play" aria-hidden="true">▶</span> Guarda il tutorial (3 minuti)
-        </button>
-        @if (bannerDismissed()) {
-          <button type="button" class="link-btn" (click)="restoreBanner()">Mostra di nuovo l’annuncio in dashboard</button>
-        }
+      <section aria-labelledby="help-dl">
+        <h3 id="help-dl">GS1 Digital Link <span class="new-tag">Nuovo</span></h3>
+        <p>Un solo QR code in etichetta porta a tutti i contenuti del prodotto: pagina prodotto, allergeni, sostenibilità, in ogni lingua.</p>
+        <ol class="help-steps">
+          <li>Nella scheda del prodotto apri la tab Digital Link e aggiungi i link.</li>
+          <li>Scegli la destinazione principale: è la pagina che si apre inquadrando il QR code.</li>
+          <li>Scarica il QR code e mettilo in etichetta.</li>
+        </ol>
+        <ul class="help-links">
+          <li>
+            <app-icon name="phone" [size]="20" [stroke]="1.8" />
+            <span>
+              <button type="button" class="res-link" aria-haspopup="dialog" (click)="openVideo()">Video tutorial</button>
+              Dal primo link al QR code, in 3 minuti
+            </span>
+          </li>
+          <li>
+            <app-icon name="download" [size]="20" [stroke]="1.8" />
+            <span>
+              <a class="res-link" [href]="t.guide" [attr.download]="t.guideName">Guida al GS1 Digital Link</a>
+              PDF, {{ t.guideSize }}: contenuti, lingue e QR code
+            </span>
+          </li>
+          @if (bannerDismissed()) {
+            <li>
+              <app-icon name="info" [size]="20" [stroke]="1.8" />
+              <span>
+                <button type="button" class="res-link" (click)="restoreBanner()">Mostra di nuovo l’annuncio</button>
+                Lo ritrovi in cima alla dashboard
+              </span>
+            </li>
+          }
+        </ul>
       </section>
-      <section>
-        <h3>GLN</h3>
-        <p>Il GLN identifica la tua azienda, i suoi luoghi (magazzini, punti vendita) e le sue funzioni (uffici, reparti).</p>
-        <button type="button" class="link-btn" (click)="notInDemo()">Apri il tutorial GLN</button>
+
+      <section aria-labelledby="help-places">
+        <h3 id="help-places">Sedi e località</h3>
+        <p>
+          Ogni sede, magazzino, punto vendita o ufficio della tua azienda può avere un codice GLN, usato da clienti e
+          fornitori per ordini, consegne e fatture.
+        </p>
+        <ul class="help-links">
+          <li>
+            <app-icon name="globe" [size]="20" [stroke]="1.8" />
+            <span>
+              <button type="button" class="res-link" (click)="notInDemo()">Tutorial sedi e località</button>
+              Come crearle e pubblicarle sul registro GS1
+            </span>
+          </li>
+        </ul>
       </section>
-      <section>
-        <h3>Domande frequenti</h3>
-        <p>Prefissi, codici a barre, finalizzazione dei prodotti e pubblicazione sul registro.</p>
-        <button type="button" class="link-btn" (click)="notInDemo()">Leggi le FAQ</button>
+
+      <section aria-labelledby="help-support">
+        <h3 id="help-support">Domande e assistenza</h3>
+        <ul class="help-links">
+          <li>
+            <app-icon name="help" [size]="20" [stroke]="1.8" />
+            <span>
+              <button type="button" class="res-link" (click)="notInDemo()">Help center</button>
+              Domande frequenti su prefissi, codici a barre e prodotti
+            </span>
+          </li>
+          <li>
+            <app-icon name="phone" [size]="20" [stroke]="1.8" />
+            <span>
+              <button type="button" class="res-link" (click)="notInDemo()">Contatta GS1 Italy</button>
+              Parla con un nostro operatore
+            </span>
+          </li>
+          <li>
+            <app-icon name="pencil" [size]="20" [stroke]="1.8" />
+            <span>
+              <button type="button" class="res-link" (click)="notInDemo()">Scrivici</button>
+              Mandaci un suggerimento su Codifico
+            </span>
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="help-learn">
+        <h3 id="help-learn">Formazione</h3>
+        <ul class="help-links">
+          <li>
+            <app-icon name="bulb" [size]="20" [stroke]="1.8" />
+            <span>
+              <button type="button" class="res-link" (click)="notInDemo()">Academy di GS1 Italy</button>
+              Corsi gratuiti su standard, soluzioni e strumenti GS1
+            </span>
+          </li>
+        </ul>
       </section>
     </div>
   </app-help-panel>

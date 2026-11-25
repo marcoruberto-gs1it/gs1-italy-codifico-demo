@@ -1,3 +1,4 @@
+import { formatNumber } from '../../core/format';
 import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -71,7 +72,7 @@ export class DashboardPage {
   protected readonly tabs: { id: RecentTab; label: string }[] = [
     { id: 'fixed', label: 'Prodotti a peso fisso' },
     { id: 'variable', label: 'Prodotti a peso variabile' },
-    { id: 'gln', label: 'GLN' },
+    { id: 'gln', label: 'Sedi e località' },
   ];
 
   /** Prodotti per stato, per la barra segmentata della card Prodotti. */
@@ -86,8 +87,8 @@ export class DashboardPage {
     { label: 'Senza', value: this.m.dl().without, color: VIZ.s2 },
   ]);
 
-  /** Scansioni per contenuto aperto; "Altri contenuti" in grigio, come resto. */
-  protected scanParts = computed<Part[]>(() => {
+  /** Visite per contenuto aperto; "Altri contenuti" in grigio, come resto. */
+  protected visitParts = computed<Part[]>(() => {
     const colors = [VIZ.s1, VIZ.s2, VIZ.s3];
     return (this.m.stats()?.byContent ?? []).map((c, i) => ({
       label: c.label,
@@ -215,7 +216,7 @@ export class DashboardPage {
   protected async copy(code: string): Promise<void> {
     try {
       await navigator.clipboard.writeText(code);
-      this.toasts.show(`GLN ${code} copiato`);
+      this.toasts.show(`Codice GLN ${code} copiato`);
     } catch {
       this.toasts.show('Copia non riuscita: seleziona il codice e copialo a mano', 'warning');
     }
@@ -223,8 +224,9 @@ export class DashboardPage {
 
   /* ---- Formati ---- */
 
+  /** Numeri con il punto delle migliaia anche a 4 cifre (3.418), come nei testi di GS1 Italy. */
   protected num(n: number): string {
-    return n.toLocaleString('it-IT');
+    return formatNumber(n);
   }
 
   protected pct(ratio: number): string {
@@ -252,9 +254,9 @@ export class DashboardPage {
 
   protected glnTypeLabel(type: string, n: number): string {
     const forms: Record<string, [string, string]> = {
-      'Entità legale': ['entità legale', 'entità legali'],
-      'Ubicazione fisica': ['ubicazione fisica', 'ubicazioni fisiche'],
-      Funzione: ['funzione', 'funzioni'],
+      Azienda: ['azienda', 'aziende'],
+      'Luogo fisico': ['luogo fisico', 'luoghi fisici'],
+      'Reparto o funzione': ['reparto o funzione', 'reparti o funzioni'],
     };
     const [one, many] = forms[type] ?? [type, type];
     return this.plural(n, one, many);

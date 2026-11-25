@@ -774,26 +774,6 @@ h1 {
   color: var(--gs1-blue);
 }
 
-.resources {
-  display: grid;
-  gap: 18px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.resources li {
-  display: flex;
-  gap: 14px;
-  font-size: 13px;
-  color: var(--text);
-}
-
-.resources app-icon {
-  color: var(--gs1-blue);
-  margin-top: 2px;
-}
-
 .res-link {
   display: block;
   padding: 0;
@@ -853,8 +833,38 @@ h1 {
   font-size: 13.5px;
 }
 
-.help .link-btn {
-  justify-self: start;
+.help h3 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.help-steps {
+  display: grid;
+  gap: 6px;
+  margin: 4px 0 6px;
+  padding-left: 20px;
+  font-size: 13.5px;
+}
+
+.help-links {
+  display: grid;
+  gap: 14px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.help-links li {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.help-links app-icon {
+  color: var(--gs1-blue);
+  margin-top: 2px;
 }
 
 /* ---- Animazioni e responsive -------------------------------------------------------------- */

@@ -70,7 +70,11 @@ export class AppHeader {
       label: 'Richieste',
       items: [{ label: 'Visualizza le richieste' }, { label: 'Nuova richiesta', create: true }],
     },
-    { label: 'GLN', items: [{ label: 'Visualizza i GLN' }, { label: 'Nuovo GLN', create: true }] },
+    // I GLN si chiamano per quello che identificano, come i GTIN sono "Prodotti".
+    {
+      label: 'Sedi e località',
+      items: [{ label: 'Visualizza sedi e località' }, { label: 'Nuova sede o località', create: true }],
+    },
   ];
 
   protected toggle(menu: string, event: Event): void {

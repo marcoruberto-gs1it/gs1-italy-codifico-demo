@@ -1,3 +1,4 @@
+import { formatNumber } from '../core/format';
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 
 /**
@@ -158,7 +159,7 @@ export class SegmentedBar {
   }
 
   protected fmt(n: number): string {
-    return n.toLocaleString('it-IT');
+    return formatNumber(n);
   }
 }
 
@@ -271,7 +272,7 @@ export class Meter {
     <!-- I punti sono in HTML per restare tondi anche con l'SVG deformato in larghezza. -->
     <span class="dot" [style.left.%]="(x(last()) / W) * 100" [style.top.px]="(y(values()[last()]) / H) * 40"></span>
     @if (hover() >= 0) {
-      <span class="readout" [style.left.%]="(x(hover()) / W) * 100">{{ dayLabel(hover()) }}: {{ values()[hover()] }} scansioni</span>
+      <span class="readout" [style.left.%]="(x(hover()) / W) * 100">{{ dayLabel(hover()) }}: {{ fmt(values()[hover()]) }} {{ unit() }}</span>
     }
   `,
 })
@@ -280,6 +281,8 @@ export class Sparkline {
   label = input.required<string>();
   /** Data (ISO) dell'ultimo valore. */
   end = input.required<string>();
+  /** Cosa si conta, per la lettura al passaggio del mouse (es. "visite"). */
+  unit = input('');
 
   protected readonly W = 300;
   protected readonly H = 40;
@@ -302,6 +305,10 @@ export class Sparkline {
     const rect = (event.currentTarget as SVGElement).getBoundingClientRect();
     const r = (event.clientX - rect.left) / rect.width;
     this.hover.set(Math.max(0, Math.min(this.last(), Math.round(r * this.last()))));
+  }
+
+  protected fmt(n: number): string {
+    return formatNumber(n);
   }
 
   protected dayLabel(i: number): string {

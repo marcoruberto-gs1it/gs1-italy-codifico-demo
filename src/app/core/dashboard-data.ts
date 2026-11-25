@@ -39,7 +39,11 @@ export interface CatalogItem {
   linkTypes: string[];
 }
 
-export type GlnType = 'Entità legale' | 'Ubicazione fisica' | 'Funzione';
+/**
+ * Tipi di GLN in parole semplici (nel GS1: entità legale, ubicazione fisica, funzione).
+ * Nel menu i GLN sono "Sedi e località", come i GTIN sono "Prodotti".
+ */
+export type GlnType = 'Azienda' | 'Luogo fisico' | 'Reparto o funzione';
 
 export interface Gln {
   gln: string;
@@ -58,18 +62,22 @@ export interface Prefix {
   capacity: number;
 }
 
-export interface ScanStats {
-  /** Scansioni degli ultimi 30 giorni. */
+/**
+ * Visite ai contenuti: le richieste arrivate al resolver GS1 per i prodotti dell'azienda, da QR
+ * code inquadrati, link aperti o app. Non sono persone: chi apre due volte conta due visite.
+ */
+export interface VisitStats {
+  /** Visite degli ultimi 30 giorni. */
   total: number;
   /** Variazione percentuale sui 30 giorni precedenti. */
   deltaPct: number;
   topGtin: string;
   topScans: number;
-  /** Scansioni giorno per giorno (30 valori, il cui totale è `total`). */
+  /** Visite giorno per giorno (30 valori, il cui totale è `total`). */
   daily: number[];
   /** Ultimo giorno della serie (ISO). */
   end: string;
-  /** Scansioni per contenuto aperto (il totale è `total`); `other` raccoglie il resto. */
+  /** Visite per contenuto aperto (il totale è `total`); `other` raccoglie il resto. */
   byContent: { label: string; value: number; other?: boolean }[];
 }
 
@@ -128,14 +136,14 @@ export interface Scenario {
   /** Compilazione degli attributi sui prodotti a peso fisso (stesso totale del catalogo). */
   attributes: AttributeFill[];
   /** Assente = statistiche non ancora disponibili. */
-  stats?: ScanStats;
+  stats?: VisitStats;
 }
 
 /** Definizioni brevi, per i tooltip. */
 export const GLN_TYPE_INFO: Record<GlnType, string> = {
-  'Entità legale': 'Identifica la tua azienda come soggetto giuridico, ad esempio nelle fatture.',
-  'Ubicazione fisica': 'Identifica un luogo, ad esempio un magazzino, uno stabilimento o un punto vendita.',
-  Funzione: 'Identifica un reparto o un ufficio, ad esempio l’ufficio acquisti.',
+  Azienda: 'Il codice che identifica la tua azienda come soggetto giuridico, ad esempio nelle fatture elettroniche.',
+  'Luogo fisico': 'Un luogo della tua azienda, ad esempio un magazzino, uno stabilimento o un punto vendita.',
+  'Reparto o funzione': 'Un ufficio o un reparto, ad esempio l’ufficio acquisti o l’amministrazione.',
 };
 
 export const REGISTRY_INFO =
@@ -253,18 +261,18 @@ const gln = (ref: number, description: string, type: GlnType, published: boolean
   modified,
 });
 
-const LEGAL_ENTITY = gln(0, 'GS1 Italy - sede legale', 'Entità legale', true, '2024-03-12');
+const LEGAL_ENTITY = gln(0, 'GS1 Italy - sede legale', 'Azienda', true, '2024-03-12');
 
 const ALL_GLNS: Gln[] = [
   LEGAL_ENTITY,
-  gln(11, 'Sede operativa di Milano', 'Ubicazione fisica', true, '2024-03-12'),
-  gln(12, 'Magazzino centrale', 'Ubicazione fisica', true, '2024-09-30'),
-  gln(13, 'Magazzino Sud', 'Ubicazione fisica', true, '2025-02-17'),
-  gln(14, 'Stabilimento di produzione', 'Ubicazione fisica', true, '2025-06-04'),
-  gln(15, 'Punto vendita di Roma', 'Ubicazione fisica', true, '2026-05-21'),
-  gln(16, 'Punto vendita di Torino', 'Ubicazione fisica', false, '2026-10-14'),
-  gln(21, 'Ufficio acquisti', 'Funzione', true, '2025-01-09'),
-  gln(22, 'Amministrazione - ricezione fatture', 'Funzione', false, '2026-08-26'),
+  gln(11, 'Sede operativa di Milano', 'Luogo fisico', true, '2024-03-12'),
+  gln(12, 'Magazzino centrale', 'Luogo fisico', true, '2024-09-30'),
+  gln(13, 'Magazzino Sud', 'Luogo fisico', true, '2025-02-17'),
+  gln(14, 'Stabilimento di produzione', 'Luogo fisico', true, '2025-06-04'),
+  gln(15, 'Punto vendita di Roma', 'Luogo fisico', true, '2026-05-21'),
+  gln(16, 'Punto vendita di Torino', 'Luogo fisico', false, '2026-10-14'),
+  gln(21, 'Ufficio acquisti', 'Reparto o funzione', true, '2025-01-09'),
+  gln(22, 'Amministrazione - ricezione fatture', 'Reparto o funzione', false, '2026-08-26'),
 ];
 
 /* ---- Scenari --------------------------------------------------------------------------------- */
@@ -340,17 +348,17 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
     ...B,
     id: 'c',
     stats: {
-      total: 1284,
-      deltaPct: 18,
+      total: 3418,
+      deltaPct: 12,
       topGtin: MAIN_PRODUCT.gtin,
-      topScans: 412,
-      daily: dailySeries(1284),
+      topScans: 1027,
+      daily: dailySeries(3418),
       end: '2026-11-24',
       byContent: [
-        { label: 'Pagina prodotto', value: 732 },
-        { label: 'Sostenibilità', value: 289 },
-        { label: 'Allergeni', value: 167 },
-        { label: 'Altri contenuti', value: 96, other: true },
+        { label: 'Pagina prodotto', value: 1946 },
+        { label: 'Sostenibilità', value: 702 },
+        { label: 'Allergeni', value: 455 },
+        { label: 'Altri contenuti', value: 315, other: true },
       ],
     },
   },

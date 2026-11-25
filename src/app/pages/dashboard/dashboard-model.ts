@@ -21,7 +21,7 @@ const CONTENT_INDICATORS = [
   { type: 'instructions', label: 'Istruzioni d’uso' },
 ] as const;
 
-const GLN_TYPES: GlnType[] = ['Entità legale', 'Ubicazione fisica', 'Funzione'];
+const GLN_TYPES: GlnType[] = ['Azienda', 'Luogo fisico', 'Reparto o funzione'];
 
 /**
  * Tutti i numeri della dashboard, ricavati dallo scenario e dallo store della demo.
@@ -116,7 +116,7 @@ export class DashboardModel {
     };
   });
 
-  readonly legalEntity = computed(() => this.scenario().glns.find((g) => g.type === 'Entità legale') ?? null);
+  readonly legalEntity = computed(() => this.scenario().glns.find((g) => g.type === 'Azienda') ?? null);
 
   /** Prefissi con l'utilizzo calcolato da catalogo e GLN. */
   readonly prefixes = computed(() =>
