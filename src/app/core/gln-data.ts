@@ -9,8 +9,6 @@ import { checkDigit } from './gs1';
  * - il tipo dice quale AI identifica il GLN: 417 "Party GLN" (un soggetto: l'azienda, un
  *   reparto o una funzione) oppure 414 "Identification of a physical location" (un luogo
  *   fisico, fisso o mobile; le sue parti interne si indicano con l'estensione AI 254);
- * - i ruoli sono gli AI con cui il GLN compare nei documenti dei partner: 410 Ship to,
- *   411 Bill to, 412 Purchased from, 413 Ship for, 415 Pay to, 416 Production/service location.
  * I luoghi digitali non hanno un AI nel dataset: per ora non sono tra i tipi selezionabili.
  *
  * Nel menu e nelle pagine i GLN si chiamano "Sedi e località", come i GTIN sono "Prodotti".
@@ -109,35 +107,6 @@ export const GLN_USES = [
   },
 ];
 
-/**
- * Ruoli verso i partner: gli AI GS1 con cui il GLN compare in ordini, documenti di trasporto,
- * fatture ed etichette logistiche. Etichetta in parole semplici, titolo GS1 come riferimento.
- */
-export const GLN_ROLES = [
-  { ai: '410', label: 'Consegna merci', gs1: 'Ship to / Deliver to', short: 'Dove consegnare la merce.' },
-  { ai: '411', label: 'Fatturazione', gs1: 'Bill to / Invoice to', short: 'A chi intestare e mandare la fattura.' },
-  { ai: '412', label: 'Vendita', gs1: 'Purchased from', short: 'Da chi il cliente acquista la merce.' },
-  {
-    ai: '413',
-    label: 'Destinazione finale',
-    gs1: 'Ship for / Deliver for - Forward to',
-    short: 'Per chi è la merce dopo la consegna, ad esempio il negozio servito da un magazzino.',
-  },
-  { ai: '415', label: 'Incasso', gs1: 'Pay to (invoicing party)', short: 'Chi emette la fattura e riceve il pagamento.' },
-  {
-    ai: '416',
-    label: 'Produzione o servizio',
-    gs1: 'Production or service location',
-    short: 'Dove il prodotto viene fabbricato o il servizio viene svolto.',
-  },
-] as const;
-
-export type GlnRole = (typeof GLN_ROLES)[number]['ai'];
-
-export function roleInfo(ai: GlnRole) {
-  return GLN_ROLES.find((r) => r.ai === ai)!;
-}
-
 /** Lo stato del GLN in Codifico: una sola colonna al posto di Bozza/Finalizzato + Attivo/Non attivo. */
 export type GlnStatus = 'Bozza' | 'Attivo' | 'Non attivo';
 
@@ -162,7 +131,6 @@ export interface GlnRecord {
   status: GlnStatus;
   registry: RegistryState;
   address?: GlnAddress;
-  roles: GlnRole[];
   /** GLN di cui fa parte (es. il magazzino fa parte dell'azienda). */
   parent?: string;
   /** Altri codici dello stesso soggetto o luogo. */
@@ -208,7 +176,6 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Via dell’Esempio 10', '20100', 'Milano', 'MI'),
-    roles: ['411', '412', '415'],
     otherIds: [{ label: 'Codice destinatario fatture', value: 'ABC1234' }],
     created: '2024-03-12',
     modified: '2026-02-10',
@@ -220,7 +187,6 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Via dell’Esempio 10', '20100', 'Milano', 'MI'),
-    roles: ['412'],
     parent: AZIENDA,
     otherIds: [],
     created: '2024-03-12',
@@ -233,7 +199,6 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Strada Provinciale 1, km 4', '26900', 'Lodi', 'LO'),
-    roles: ['410'],
     parent: AZIENDA,
     otherIds: [],
     created: '2024-09-30',
@@ -246,7 +211,6 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Via dei Trasporti 22', '70100', 'Bari', 'BA'),
-    roles: ['410'],
     parent: AZIENDA,
     otherIds: [],
     created: '2025-02-17',
@@ -259,7 +223,6 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Via dell’Industria 5', '43100', 'Parma', 'PR'),
-    roles: ['416'],
     parent: AZIENDA,
     otherIds: [],
     created: '2025-06-04',
@@ -272,7 +235,6 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Piazza del Negozio 3', '00100', 'Roma', 'RM'),
-    roles: ['410', '413'],
     parent: AZIENDA,
     otherIds: [],
     created: '2026-05-21',
@@ -285,7 +247,6 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Attivo',
     registry: 'Non pubblicato',
     address: addr('Corso del Commercio 40', '10100', 'Torino', 'TO'),
-    roles: ['413'],
     parent: AZIENDA,
     otherIds: [],
     created: '2026-10-14',
@@ -298,7 +259,6 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Bozza',
     registry: 'Non pubblicato',
     address: addr('Via della Logistica 8', '40100', 'Bologna', 'BO'),
-    roles: [],
     parent: AZIENDA,
     otherIds: [],
     created: '2026-11-18',
@@ -311,7 +271,6 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Non attivo',
     registry: 'Visibile ai partner',
     address: addr('Via del Deposito 2', '37100', 'Verona', 'VR'),
-    roles: ['410'],
     parent: AZIENDA,
     otherIds: [],
     created: '2024-04-02',
@@ -323,7 +282,6 @@ export const SEED_GLNS: GlnRecord[] = [
     type: 'Reparto o funzione',
     status: 'Attivo',
     registry: 'Visibile ai partner',
-    roles: [],
     parent: AZIENDA,
     otherIds: [],
     created: '2025-01-09',
@@ -335,7 +293,6 @@ export const SEED_GLNS: GlnRecord[] = [
     type: 'Reparto o funzione',
     status: 'Attivo',
     registry: 'In pubblicazione',
-    roles: ['411'],
     parent: AZIENDA,
     otherIds: [],
     created: '2026-08-26',
@@ -347,7 +304,6 @@ export const SEED_GLNS: GlnRecord[] = [
     type: 'Luogo mobile',
     status: 'Attivo',
     registry: 'Visibile ai partner',
-    roles: [],
     parent: MAGAZZINO,
     otherIds: [{ label: 'Targa', value: 'AA000AA' }],
     created: '2025-09-15',
@@ -360,7 +316,6 @@ export const SEED_GLNS: GlnRecord[] = [
     status: 'Attivo',
     registry: 'Visibile ai partner',
     address: addr('Via del Porto 15', '80100', 'Napoli', 'NA'),
-    roles: [],
     parent: AZIENDA,
     otherIds: [],
     created: '2019-06-11',

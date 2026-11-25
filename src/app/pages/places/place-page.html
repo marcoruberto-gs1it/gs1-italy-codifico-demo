@@ -123,29 +123,6 @@
           </div>
 
           <div class="group">
-            <h3>
-              Ruoli verso i partner
-              <app-tip tipId="tip-roles" text="Sono gli AI GS1 con cui questo GLN compare nei documenti dei partner: ad esempio 410 per dove consegnare la merce, 411 per a chi mandare la fattura.">
-                <button type="button" class="info-btn" aria-label="Cosa sono i ruoli?" aria-describedby="tip-roles">
-                  <app-icon name="info" [size]="15" [stroke]="2" />
-                </button>
-              </app-tip>
-            </h3>
-            @if (g.roles.length) {
-              <ul class="chips">
-                @for (r of g.roles; track r) {
-                  <li [attr.title]="role(r).short">
-                    <span class="ai-tag">AI {{ r }}</span> {{ role(r).label }}
-                    <span class="visually-hidden">: {{ role(r).short }}</span>
-                  </li>
-                }
-              </ul>
-            } @else {
-              <p class="hint">Nessun ruolo indicato. Aggiungilo con Modifica: aiuta i partner a usare il codice giusto.</p>
-            }
-          </div>
-
-          <div class="group">
             <h3>Altri codici</h3>
             @if (g.otherIds.length) {
               <dl class="kv">

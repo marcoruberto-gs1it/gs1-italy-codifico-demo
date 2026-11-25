@@ -139,10 +139,6 @@
   font-weight: 400;
 }
 
-.chips .ai-tag {
-  margin-right: 4px;
-}
-
 .type-line {
   display: inline-flex;
   align-items: center;
@@ -165,7 +161,6 @@
 }
 
 .group > .hint,
-.group > .chips,
 .group > .addr {
   margin-top: 14px;
 }
@@ -175,23 +170,6 @@
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-strong);
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0;
-  list-style: none;
-}
-
-.chips li {
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: #eef3f9;
-  color: var(--gs1-blue);
-  font-size: 13px;
-  font-weight: 600;
 }
 
 .info-btn {

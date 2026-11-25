@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { GLN_AI, GLN_PREFIX, GLN_TYPE_INFO, GlnRecord, roleInfo } from '../../core/gln-data';
+import { GLN_AI, GLN_PREFIX, GLN_TYPE_INFO, GlnRecord } from '../../core/gln-data';
 import { GlnStore } from '../../core/gln-store';
 import { Icon } from '../../ui/icon';
 import { Tip } from '../../ui/tip';
@@ -27,7 +27,6 @@ export class PlacePage {
   private toasts = inject(Toasts);
   protected readonly info = GLN_TYPE_INFO;
   protected readonly ai = GLN_AI;
-  protected readonly role = roleInfo;
 
   protected g = computed(() => this.store.find(this.gln()));
   protected parent = computed(() => {

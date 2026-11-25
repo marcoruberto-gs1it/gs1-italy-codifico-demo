@@ -204,24 +204,6 @@
         <p class="step-help">L’indirizzo non serve: un {{ t.toLowerCase() }} non ha un indirizzo fisso.</p>
       }
 
-      <div class="roles" role="group" aria-labelledby="roles-title" aria-describedby="roles-hint">
-        <h3 id="roles-title">Ruoli verso i partner <span class="opt">(facoltativo)</span></h3>
-        <p class="field-hint" id="roles-hint">
-          Con quali AI GS1 questo GLN comparirà negli ordini, nei documenti di trasporto e nelle fatture dei partner. Puoi
-          sceglierne più di uno.
-        </p>
-        <div class="role-list">
-          @for (r of roles; track r.ai) {
-            <label class="role" [class.on]="selectedRoles().includes(r.ai)">
-              <input type="checkbox" [checked]="selectedRoles().includes(r.ai)" (change)="toggleRole(r.ai)" />
-              <span class="role-text">
-                <span><span class="ai-tag">AI {{ r.ai }}</span> <strong>{{ r.label }}</strong></span>
-                <span class="role-hint">{{ r.short }}</span>
-              </span>
-            </label>
-          }
-        </div>
-      </div>
     </fieldset>
 
     <!-- 3. Codice e registro -->

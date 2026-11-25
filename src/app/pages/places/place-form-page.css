@@ -157,8 +157,7 @@ legend {
 }
 
 .field label,
-.address h3,
-.roles h3 {
+.address h3 {
   color: var(--gs1-blue-text);
   font-size: 14px;
   font-weight: 600;
@@ -226,64 +225,9 @@ legend {
   grid-column: 1 / -1;
 }
 
-.role-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.role-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-}
-
-.role-text {
-  display: grid;
-  gap: 2px;
-}
-
-.role-text .ai-tag {
-  margin-right: 6px;
-}
-
 .family-head .ai-tag,
 .type-fixed .ai-tag {
   margin-right: 2px;
-}
-
-.role-hint {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 400;
-}
-
-.role {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: #fff;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.role.on {
-  border-color: var(--gs1-blue);
-  background: #eef3f9;
-  color: var(--gs1-blue);
-  font-weight: 600;
-}
-
-.role input {
-  accent-color: var(--gs1-blue);
-}
-
-.role:has(input:focus-visible) {
-  outline: 2px solid var(--gs1-link);
-  outline-offset: 2px;
 }
 
 .code-box {

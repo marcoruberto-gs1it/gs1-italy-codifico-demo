@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { isValidGtin } from './gs1';
-import { GLN_ROLES, GLN_TYPE_INFO } from './gln-data';
+import { GLN_TYPE_INFO } from './gln-data';
 import { GlnStore, PUBLISH_DELAY_MS } from './gln-store';
 
 describe('GlnStore', () => {
@@ -28,12 +28,6 @@ describe('GlnStore', () => {
     }
   });
 
-  it('i ruoli sono AI di ruolo GS1 (410-416)', () => {
-    const roleAis = GLN_ROLES.map((r) => r.ai as string);
-    expect(roleAis).toEqual(['410', '411', '412', '413', '415', '416']);
-    expect(store.all().every((g) => g.roles.every((r) => roleAis.includes(r)))).toBe(true);
-  });
-
   it('i collegamenti "fa parte di" puntano a GLN esistenti', () => {
     const codes = new Set(store.all().map((g) => g.gln));
     expect(store.all().every((g) => !g.parent || codes.has(g.parent))).toBe(true);
@@ -41,7 +35,7 @@ describe('GlnStore', () => {
 
   it('il codice di un nuovo GLN è assegnato da Codifico: valido e libero', () => {
     const before = store.all().map((g) => g.gln);
-    const g = store.create({ name: 'Magazzino di prova', type: 'Luogo fisso', roles: [], otherIds: [] }, false, false);
+    const g = store.create({ name: 'Magazzino di prova', type: 'Luogo fisso', otherIds: [] }, false, false);
     expect(isValidGtin(g.gln)).toBe(true);
     expect(before).not.toContain(g.gln);
     expect(g.status).toBe('Bozza');
@@ -50,7 +44,7 @@ describe('GlnStore', () => {
 
   it('attivando con la pubblicazione il GLN passa da "In pubblicazione" a "Visibile ai partner"', () => {
     vi.useFakeTimers();
-    const g = store.create({ name: 'Ufficio di prova', type: 'Reparto o funzione', roles: ['411'], otherIds: [] }, true, true);
+    const g = store.create({ name: 'Ufficio di prova', type: 'Reparto o funzione', otherIds: [] }, true, true);
     expect(store.find(g.gln)?.status).toBe('Attivo');
     expect(store.find(g.gln)?.registry).toBe('In pubblicazione');
     vi.advanceTimersByTime(PUBLISH_DELAY_MS);

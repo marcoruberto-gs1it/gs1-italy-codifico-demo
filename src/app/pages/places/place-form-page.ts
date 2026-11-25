@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRender, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { GLN_AI, GLN_PREFIX, GLN_ROLES, GLN_TYPE_INFO, GLN_TYPES, GlnAi, GlnRole, GlnType } from '../../core/gln-data';
+import { GLN_AI, GLN_PREFIX, GLN_TYPE_INFO, GLN_TYPES, GlnAi, GlnType } from '../../core/gln-data';
 import { GlnDraft, GlnStore } from '../../core/gln-store';
 import { Icon } from '../../ui/icon';
 import { Toasts } from '../../ui/toast';
@@ -40,7 +40,6 @@ export class PlaceFormPage {
     ...GLN_AI[ai],
     types: GLN_TYPES.filter((t) => GLN_TYPE_INFO[t].ai === ai),
   }));
-  protected readonly roles = GLN_ROLES;
   protected readonly countries = COUNTRIES;
   protected readonly prefix = GLN_PREFIX;
 
@@ -60,7 +59,6 @@ export class PlaceFormPage {
   protected city = signal('');
   protected province = signal('');
   protected country = signal('Italia');
-  protected selectedRoles = signal<GlnRole[]>([]);
   protected publish = signal(true);
   protected submitted = signal(false);
 
@@ -85,7 +83,6 @@ export class PlaceFormPage {
           this.city.set(g.address?.city ?? '');
           this.province.set(g.address?.province ?? '');
           this.country.set(g.address?.country ?? 'Italia');
-          this.selectedRoles.set([...g.roles]);
         } else {
           this.parent.set(this.store.legalEntity()?.gln ?? '');
         }
@@ -131,10 +128,6 @@ export class PlaceFormPage {
     el?.focus();
   }
 
-  protected toggleRole(role: GlnRole): void {
-    this.selectedRoles.update((list) => (list.includes(role) ? list.filter((r) => r !== role) : [...list, role]));
-  }
-
   private draft(): GlnDraft {
     const rule = this.addressRule();
     const hasAddress = rule !== 'non serve' && (this.street().trim() || this.city().trim());
@@ -151,7 +144,6 @@ export class PlaceFormPage {
             country: this.country(),
           }
         : undefined,
-      roles: this.selectedRoles(),
       otherIds: this.existing()?.otherIds ?? [],
     };
   }
