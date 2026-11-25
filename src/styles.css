@@ -31,6 +31,13 @@
   --border-soft: #dadcdc;
   --rule: #bdc4cc;
 
+  /* Colori dei dati (grafici della dashboard): vedi ui/charts.ts. */
+  --viz-1: #2e5eaa;
+  --viz-2: #f26334;
+  --viz-3: #018dbd;
+  --viz-track: #dde6f3;
+  --viz-muted: #9aa6b2;
+
   --font: 'Montserrat', 'Segoe UI', Verdana, Arial, sans-serif;
   --shadow-modal: 0 18px 50px rgb(0 20 50 / 0.28);
   --ease: cubic-bezier(0.2, 0.7, 0.2, 1);

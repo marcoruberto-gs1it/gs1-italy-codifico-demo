@@ -330,9 +330,7 @@ h1 {
   padding: 18px 20px 20px;
 }
 
-.meter-slot {
-  margin-top: 12px;
-}
+
 
 .stat-title {
   display: flex;
@@ -364,20 +362,16 @@ h1 {
   font-size: 13px;
 }
 
-.meter {
-  height: 6px;
-  margin-top: 12px;
-  border-radius: 999px;
-  background: #e6ebf1;
-  overflow: hidden;
+/* Riga della visualizzazione: barra segmentata o misuratore. */
+.stat-viz {
+  margin-top: 14px;
 }
 
-.meter span {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--gs1-blue);
-  transition: width 0.6s var(--ease);
+.stat-pct {
+  margin-left: 10px;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .stat-detail {
@@ -420,50 +414,89 @@ h1 {
   vertical-align: middle;
 }
 
-.contents {
-  margin-top: 16px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border-soft);
-}
+/* ---- Digital Link nel dettaglio ------------------------------------------------------------ */
 
-.contents-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 32px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--gs1-blue);
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.contents-list {
+.dl-detail {
   display: grid;
-  gap: 6px;
-  margin: 6px 0 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  margin-top: 18px;
+}
+
+.dl-detail > div + div {
+  padding-left: 32px;
+  border-left: 1px solid var(--border-soft);
+}
+
+.detail-title {
+  color: var(--gs1-blue);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.detail-sub {
+  margin: 2px 0 14px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.soon {
+  display: flex;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 16px;
+  background: #f6f8fb;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.soon app-icon {
+  color: var(--gs1-blue);
+}
+
+.soon strong {
+  display: block;
+  color: var(--gs1-blue);
+}
+
+/* Elenco di misuratori: nome e valore sopra, barra sotto, barre allineate. */
+.meter-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
   padding: 0;
   list-style: none;
   font-size: 13px;
 }
 
-.contents-list[hidden] {
-  display: none;
+.meter-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 10px;
 }
 
-.contents-list li {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.contents-n {
-  color: var(--gs1-blue);
+.ml-n {
+  color: var(--text-strong);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.ml-bar {
+  grid-column: 1 / -1;
+}
+
+.scan-figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-bottom: 6px;
+}
+
+.scan-figure strong {
+  color: var(--gs1-blue);
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .scan-line {
@@ -477,7 +510,6 @@ h1 {
 }
 
 .delta {
-  margin-left: 4px;
   color: var(--gs1-green-dark);
   font-weight: 700;
 }
@@ -487,9 +519,13 @@ h1 {
 }
 
 .scan-top {
-  display: block;
-  margin-top: 2px;
+  margin-top: 6px;
   color: var(--muted);
+  font-size: 12.5px;
+}
+
+.delta {
+  font-size: 12.5px;
 }
 
 /* ---- Ultimi codici censiti ----------------------------------------------------------------- */
@@ -697,6 +733,122 @@ span.badge[tabindex] {
 .empty {
   padding: 22px 6px 6px;
   color: var(--muted);
+}
+
+/* ---- Richieste in corso ------------------------------------------------------------------- */
+
+.block-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+/* Richieste che aspettano l'utente: icona, testo e colore insieme, mai il solo colore. */
+.attention {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fff3ee;
+  color: #a63c14;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.count {
+  display: inline-block;
+  min-width: 20px;
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #eef1f4;
+  color: var(--text-strong);
+  font-size: 11.5px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.req-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #3f7a1a;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.req-status.todo {
+  color: #a63c14;
+}
+
+.row-cta {
+  width: 90px;
+  text-align: right;
+}
+
+/* ---- Completezza delle schede -------------------------------------------------------------- */
+
+.block-sub {
+  margin-top: 6px;
+  color: var(--text);
+  font-size: 13.5px;
+}
+
+.quality {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quality li {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) 150px;
+  align-items: center;
+  gap: 14px;
+  font-size: 13.5px;
+}
+
+.q-name {
+  color: var(--text-strong);
+}
+
+.q-val {
+  color: var(--text);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.q-val strong {
+  display: inline-block;
+  min-width: 42px;
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.quality-hint {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 12px 14px;
+  background: var(--url-box);
+  border-left: 3px solid var(--gs1-blue);
+  font-size: 13.5px;
+}
+
+.quality-hint app-icon {
+  color: var(--gs1-blue);
+}
+
+.quality-hint a {
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 /* ---- Colonna laterale ---------------------------------------------------------------------- */
@@ -980,15 +1132,35 @@ span.badge[tabindex] {
   /* Solo qui la tabella scorre in orizzontale: sopra i 760 px entra intera e i tooltip non
      vengono tagliati dal contenitore. */
   .table-wrap {
+    position: relative; /* tiene dentro anche i testi solo per lettori di schermo */
     overflow-x: auto;
   }
+  .dl-detail {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .dl-detail > div + div {
+    padding: 24px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--border-soft);
+  }
+  .quality li {
+    grid-template-columns: 1fr auto;
+    gap: 4px 10px;
+  }
+  .q-bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
   /* Tabella compatta: restano codice, stato, Digital Link e azioni. */
-  .recent th:nth-child(2),
-  .recent td:nth-child(2),
-  .recent th:nth-child(3),
-  .recent td:nth-child(3),
-  .recent th:nth-child(6),
-  .recent td:nth-child(6) {
+  .recent:not(.req) th:nth-child(2),
+  .recent:not(.req) td:nth-child(2),
+  .recent:not(.req) th:nth-child(3),
+  .recent:not(.req) td:nth-child(3),
+  .recent:not(.req) th:nth-child(6),
+  .recent:not(.req) td:nth-child(6),
+  .req th:nth-child(3),
+  .req td:nth-child(3) {
     display: none;
   }
 }

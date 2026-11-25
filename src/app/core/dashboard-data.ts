@@ -65,6 +65,54 @@ export interface ScanStats {
   deltaPct: number;
   topGtin: string;
   topScans: number;
+  /** Scansioni giorno per giorno (30 valori, il cui totale è `total`). */
+  daily: number[];
+  /** Ultimo giorno della serie (ISO). */
+  end: string;
+}
+
+/**
+ * Serie giornaliera di esempio: crescita leggera (coerente con la variazione positiva) e calo
+ * nel fine settimana, scalata perché la somma sia esattamente `total`.
+ */
+function dailySeries(total: number, days = 30): number[] {
+  const raw = Array.from({ length: days }, (_, i) => {
+    const trend = 1 + (i / days) * 0.35;
+    const weekend = i % 7 === 5 || i % 7 === 6 ? 0.7 : 1;
+    const wobble = 1 + 0.12 * Math.sin(i * 1.7);
+    return trend * weekend * wobble;
+  });
+  const sum = raw.reduce((a, b) => a + b, 0);
+  const values = raw.map((v) => Math.round((v / sum) * total));
+  // Arrotondamenti: la differenza va sull'ultimo giorno, così il totale torna.
+  values[days - 1] += total - values.reduce((a, b) => a + b, 0);
+  return values;
+}
+
+/** Richiesta di modifica di un prodotto, in lavorazione presso GS1 Italy. */
+export interface ChangeRequest {
+  gtin: string;
+  description: string;
+  /** Invio della richiesta (ISO, con ora). */
+  sent: string;
+  /** "Da integrare": GS1 Italy chiede dati all'azienda, quindi tocca all'utente. */
+  status: 'In verifica' | 'Da integrare';
+}
+
+/** Richiesta di un codice per un prodotto a peso variabile. */
+export interface VariableWeightRequest {
+  description: string;
+  category: string;
+  created: string;
+  status: 'In verifica' | 'Da integrare';
+}
+
+/** Un attributo della scheda prodotto e su quanti prodotti è compilato. */
+export interface AttributeFill {
+  label: string;
+  filled: number;
+  /** Perché conta, in una frase: compare quando l'attributo è il meno compilato. */
+  why: string;
 }
 
 export interface Scenario {
@@ -73,6 +121,10 @@ export interface Scenario {
   prefixes: Prefix[];
   catalog: CatalogItem[];
   glns: Gln[];
+  changeRequests: ChangeRequest[];
+  variableRequests: VariableWeightRequest[];
+  /** Compilazione degli attributi sui prodotti a peso fisso (stesso totale del catalogo). */
+  attributes: AttributeFill[];
   /** Assente = statistiche non ancora disponibili. */
   stats?: ScanStats;
 }
@@ -215,6 +267,30 @@ const ALL_GLNS: Gln[] = [
 
 /* ---- Scenari --------------------------------------------------------------------------------- */
 
+/* ---- Richieste e completezza ----------------------------------------------------------------- */
+
+const WHY = {
+  brand: 'La marca permette di ritrovare il prodotto nelle ricerche dei partner.',
+  description: 'Una descrizione completa evita errori di anagrafica presso i rivenditori.',
+  image: 'Le immagini rendono riconoscibile il prodotto su cataloghi ed e-commerce.',
+  gpc: 'La classificazione GPC colloca il prodotto nella categoria giusta.',
+  content: 'Il contenuto netto serve per prezzi al kg o al litro e per la logistica.',
+  countries: 'I paesi di vendita indicano dove il prodotto è in commercio.',
+};
+
+/** Compilazione per attributo, come quota del totale (arrotondata a prodotti interi). */
+function attributes(total: number, shares: [number, number, number, number, number, number]): AttributeFill[] {
+  const n = (share: number) => Math.round(total * share);
+  return [
+    { label: 'Marca', filled: n(shares[0]), why: WHY.brand },
+    { label: 'Descrizione prodotto', filled: n(shares[1]), why: WHY.description },
+    { label: 'Immagine', filled: n(shares[2]), why: WHY.image },
+    { label: 'Classificazione GPC', filled: n(shares[3]), why: WHY.gpc },
+    { label: 'Contenuto netto', filled: n(shares[4]), why: WHY.content },
+    { label: 'Paesi di vendita', filled: n(shares[5]), why: WHY.countries },
+  ];
+}
+
 const ACTIVE_CATALOG = [...demoItems(['Finalizzato', 'Bozza']), ...generatedCatalog(157, 41, 6)];
 
 const B: Scenario = {
@@ -223,6 +299,16 @@ const B: Scenario = {
   prefixes: [P_MASTER, P_EXAMPLES, P_EXTRA, P_GLN],
   catalog: ACTIVE_CATALOG,
   glns: ALL_GLNS,
+  // Richieste sui prodotti della demo: si aprono dalla dashboard.
+  changeRequests: [
+    { gtin: '8032089002028', description: 'Spaghetti di semola di grano duro 500 g', sent: '2026-11-20T10:30', status: 'Da integrare' },
+    { gtin: '8000000000521', description: 'Olio extravergine di oliva 50 cl', sent: '2026-11-12T17:10', status: 'In verifica' },
+    { gtin: '8032089000673', description: 'Biscotti frollini 350 g', sent: '2026-10-30T09:16', status: 'In verifica' },
+  ],
+  variableRequests: [
+    { description: 'Formaggio stagionato a tranci', category: 'Formaggi', created: '2026-10-22', status: 'In verifica' },
+  ],
+  attributes: attributes(ACTIVE_CATALOG.length, [0.756, 0.756, 0.048, 0.601, 0.637, 0.122]),
 };
 
 export const SCENARIOS: Record<ScenarioId, Scenario> = {
@@ -243,11 +329,21 @@ export const SCENARIOS: Record<ScenarioId, Scenario> = {
       },
     ],
     glns: [LEGAL_ENTITY],
+    changeRequests: [],
+    variableRequests: [],
+    attributes: attributes(2, [1, 1, 0, 0.5, 0.5, 0]),
   },
   b: B,
   c: {
     ...B,
     id: 'c',
-    stats: { total: 1284, deltaPct: 18, topGtin: MAIN_PRODUCT.gtin, topScans: 412 },
+    stats: {
+      total: 1284,
+      deltaPct: 18,
+      topGtin: MAIN_PRODUCT.gtin,
+      topScans: 412,
+      daily: dailySeries(1284),
+      end: '2026-11-24',
+    },
   },
 };

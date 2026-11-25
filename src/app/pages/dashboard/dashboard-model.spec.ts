@@ -62,6 +62,23 @@ describe('DashboardModel', () => {
     expect(model.dl().contents[1].count).toBe(10);
   });
 
+  it('completezza: stesso totale dei prodotti, dal meno compilato', () => {
+    for (const id of ['a', 'b'] as const) {
+      model.scenarioId.set(id);
+      const attrs = model.attributes();
+      expect(attrs.every((a) => a.total === model.products().total && a.filled <= a.total)).toBe(true);
+      expect(attrs.map((a) => a.share)).toEqual([...attrs.map((a) => a.share)].sort((x, y) => x - y));
+    }
+  });
+
+  it('richieste: le modifiche riguardano prodotti del catalogo', () => {
+    model.scenarioId.set('b');
+    const gtins = new Set(model.catalog().map((c) => c.gtin));
+    expect(model.changeRequests().every((r) => gtins.has(r.gtin))).toBe(true);
+    expect(model.requests().total).toBe(4);
+    expect(model.requests().toComplete).toBe(1);
+  });
+
   it('scenario A: nessun prodotto finalizzato', () => {
     model.scenarioId.set('a');
     expect(model.dl().scope).toBe(0);
@@ -71,7 +88,11 @@ describe('DashboardModel', () => {
 
   it('scenario C: il prodotto più letto ha il Digital Link', () => {
     model.scenarioId.set('c');
-    const top = model.catalog().find((p) => p.gtin === model.stats()!.topGtin)!;
+    const s = model.stats()!;
+    const top = model.catalog().find((p) => p.gtin === s.topGtin)!;
     expect(top.linkCount).toBeGreaterThan(0);
+    expect(s.daily).toHaveLength(30);
+    expect(s.daily.reduce((a, b) => a + b, 0)).toBe(s.total);
+    expect(s.topScans).toBeLessThanOrEqual(s.total);
   });
 });

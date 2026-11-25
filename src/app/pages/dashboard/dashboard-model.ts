@@ -126,6 +126,27 @@ export class DashboardModel {
     }),
   );
 
+  /* ---- Richieste in corso ---- */
+
+  readonly changeRequests = computed(() =>
+    [...this.scenario().changeRequests].sort((a, b) => b.sent.localeCompare(a.sent)),
+  );
+  readonly variableRequests = computed(() => this.scenario().variableRequests);
+  readonly requests = computed(() => {
+    const all = [...this.scenario().changeRequests, ...this.scenario().variableRequests];
+    return { total: all.length, toComplete: all.filter((r) => r.status === 'Da integrare').length };
+  });
+
+  /* ---- Completezza dei dati ---- */
+
+  /** Attributi dal meno al più compilato: in cima quello su cui conviene lavorare. */
+  readonly attributes = computed(() => {
+    const total = this.products().total;
+    return [...this.scenario().attributes]
+      .map((a) => ({ ...a, total, share: total ? a.filled / total : 0 }))
+      .sort((a, b) => a.share - b.share);
+  });
+
   /* ---- Ultimi codici censiti ---- */
 
   readonly recentProducts = computed(() =>

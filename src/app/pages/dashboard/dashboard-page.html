@@ -164,18 +164,10 @@
         <h3 id="stat-products" class="stat-title">Prodotti a peso fisso</h3>
         <p class="stat-main">
           <span class="stat-num">{{ num(m.products().total) }}</span>
-          <span class="stat-of">su {{ num(m.products().capacity) }} codici disponibili</span>
+          <span class="stat-of">censiti, su {{ num(m.products().capacity) }} codici disponibili</span>
         </p>
-        <div
-          class="meter"
-          role="meter"
-          aria-label="Codici usati sui prefissi"
-          aria-valuemin="0"
-          [attr.aria-valuemax]="m.products().capacity"
-          [attr.aria-valuenow]="m.products().total"
-          [attr.aria-valuetext]="num(m.products().total) + ' su ' + num(m.products().capacity)"
-        >
-          <span [style.width]="barWidth(m.products().saturation)"></span>
+        <div class="stat-viz">
+          <app-segmented-bar label="Prodotti a peso fisso per stato" [parts]="productParts()" />
         </div>
         <p class="stat-detail">
           @if (m.products().drafts) {
@@ -206,19 +198,11 @@
         </h3>
         @if (m.dl().scope) {
           <p class="stat-main">
-            <span class="stat-num">{{ num(m.dl().withDl) }}</span>
-            <span class="stat-of">su {{ plural(m.dl().scope, 'prodotto finalizzato', 'prodotti finalizzati') }} · {{ pct(m.dl().coverage) }}</span>
+            <span class="stat-num">{{ num(m.dl().withDl) }}<span class="stat-pct">{{ pct(m.dl().coverage) }}</span></span>
+            <span class="stat-of">su {{ plural(m.dl().scope, 'prodotto finalizzato', 'prodotti finalizzati') }}</span>
           </p>
-          <div
-            class="meter"
-            role="meter"
-            aria-label="Prodotti finalizzati con GS1 Digital Link"
-            aria-valuemin="0"
-            [attr.aria-valuemax]="m.dl().scope"
-            [attr.aria-valuenow]="m.dl().withDl"
-            [attr.aria-valuetext]="num(m.dl().withDl) + ' su ' + num(m.dl().scope) + ', ' + pct(m.dl().coverage)"
-          >
-            <span [style.width]="barWidth(m.dl().coverage)"></span>
+          <div class="stat-viz">
+            <app-meter label="Prodotti finalizzati con GS1 Digital Link" [value]="m.dl().withDl" [max]="m.dl().scope" [size]="12" />
           </div>
           <p class="stat-detail">
             @if (m.dl().without) {
@@ -237,48 +221,14 @@
             <span class="stat-num">0</span>
             <span class="stat-of">prodotti finalizzati</span>
           </p>
-          <div class="meter" aria-hidden="true"><span style="width: 0"></span></div>
+          <div class="stat-viz"></div>
           <p class="stat-detail">Si usa sui prodotti finalizzati: finalizza il primo per iniziare.</p>
           <div class="stat-action">
             <button type="button" class="btn btn-secondary" (click)="helpOpen.set(true)">Scopri come funziona</button>
           </div>
         }
 
-        <div class="stat-extra">
-        @if (m.dl().withDl) {
-          <div class="contents">
-            <button
-              type="button"
-              class="contents-toggle"
-              aria-controls="dl-contents"
-              [attr.aria-expanded]="contentsOpen()"
-              (click)="contentsOpen.set(!contentsOpen())"
-            >
-              Contenuti collegati
-              <app-icon name="chevron-down" [size]="15" [stroke]="2" [class.flip]="contentsOpen()" />
-            </button>
-            <ul id="dl-contents" class="contents-list" [hidden]="!contentsOpen()">
-              @for (c of m.dl().contents; track c.label) {
-                <li>
-                  <span>{{ c.label }}</span>
-                  <span class="contents-n">{{ num(c.count) }} su {{ num(m.dl().withDl) }}</span>
-                </li>
-              }
-            </ul>
-          </div>
-        }
-        @if (m.dl().scope) {
-          @if (m.stats(); as s) {
-            <p class="scan-line">
-              <strong>{{ num(s.total) }}</strong> scansioni negli ultimi 30 giorni
-              <span class="delta" [class.down]="s.deltaPct < 0">{{ s.deltaPct > 0 ? '+' : '' }}{{ s.deltaPct }}%</span>
-              <span class="scan-top">Più letto: {{ s.topDescription }} ({{ num(s.topScans) }})</span>
-            </p>
-          } @else {
-            <p class="scan-line muted">Statistiche di scansione in arrivo</p>
-          }
-        }
-        </div>
+        <div class="stat-extra"></div>
       </article>
 
       <!-- GLN -->
@@ -293,15 +243,13 @@
         </h3>
         <p class="stat-main">
           <span class="stat-num">{{ num(m.glnSummary().total) }}</span>
-          <span class="stat-of">
-            @for (g of m.glnSummary().byType; track g.type; let last = $last) {
-              {{ glnTypeLabel(g.type, g.count) }}{{ last ? '' : ' · ' }}
-            }
-          </span>
+          <span class="stat-of">per l’azienda, i suoi luoghi e le sue funzioni</span>
         </p>
-        <div class="meter-slot" aria-hidden="true"></div>
+        <div class="stat-viz">
+          <app-segmented-bar label="GLN per tipo" [parts]="glnParts()" />
+        </div>
         <p class="stat-detail">
-          {{ num(m.glnSummary().published) }} {{ m.glnSummary().published === 1 ? 'pubblicato' : 'pubblicati' }} sul registro
+          {{ num(m.glnSummary().published) }} su {{ num(m.glnSummary().total) }} pubblicati sul registro
           <app-tip tipId="tip-registry" [text]="registryInfo" class="end">
             <button type="button" class="info-btn" aria-label="Cos’è il registro GS1?" aria-describedby="tip-registry">
               <app-icon name="info" [size]="15" [stroke]="2" />
@@ -316,6 +264,119 @@
         <div class="stat-extra"></div>
       </article>
     </section>
+
+    <!-- Richieste in corso: "cosa faccio adesso?". Solo se ce ne sono. -->
+    @if (m.requests().total) {
+      <section class="card block" aria-labelledby="req-title">
+        <div class="block-head">
+          <h2 id="req-title" class="block-title">Richieste in corso</h2>
+          @if (m.requests().toComplete) {
+            <span class="attention">
+              <app-icon name="alert-circle" [size]="15" [stroke]="2" />
+              {{ plural(m.requests().toComplete, 'richiesta da integrare', 'richieste da integrare') }}
+            </span>
+          }
+        </div>
+        <div class="subtabs" role="tablist" aria-labelledby="req-title" (keydown)="onReqTabKey($event)">
+          @for (tb of reqTabs(); track tb.id) {
+            <button
+              type="button"
+              role="tab"
+              [id]="'reqtab-' + tb.id"
+              aria-controls="req-panel"
+              [attr.aria-selected]="reqTab() === tb.id"
+              [attr.tabindex]="reqTab() === tb.id ? 0 : -1"
+              [class.on]="reqTab() === tb.id"
+              (click)="reqTab.set(tb.id)"
+            >
+              {{ tb.label }} <span class="count">{{ tb.count }}</span>
+            </button>
+          }
+        </div>
+        <div role="tabpanel" id="req-panel" [attr.aria-labelledby]="'reqtab-' + reqTab()">
+          @if (reqTab() === 'changes') {
+            @if (m.changeRequests().length) {
+              <div class="table-wrap">
+                <table class="recent req">
+                  <thead>
+                    <tr>
+                      <th scope="col">Codice</th>
+                      <th scope="col">Descrizione</th>
+                      <th scope="col">Tipo</th>
+                      <th scope="col">Stato</th>
+                      <th scope="col" class="num">Inviata il</th>
+                      <th scope="col"><span class="visually-hidden">Azioni</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (r of m.changeRequests(); track r.gtin + r.sent) {
+                      <tr>
+                        <td><button type="button" class="code" (click)="openGtin(r.gtin)">{{ r.gtin }}</button></td>
+                        <td class="desc">{{ r.description }}</td>
+                        <td><span class="badge type">GTIN-13</span></td>
+                        <td>
+                          <span class="req-status" [class.todo]="r.status === 'Da integrare'">
+                            <app-icon [name]="r.status === 'Da integrare' ? 'alert-circle' : 'check-circle'" [size]="14" [stroke]="2" />
+                            {{ r.status }}
+                          </span>
+                        </td>
+                        <td class="num">{{ dateTime(r.sent) }}</td>
+                        <td class="row-cta">
+                          @if (r.status === 'Da integrare') {
+                            <button type="button" class="link-btn" (click)="openGtin(r.gtin)">
+                              Integra<span class="visually-hidden"> la richiesta per {{ r.gtin }}</span>
+                            </button>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="empty">Nessuna richiesta di modifica in corso.</p>
+            }
+          } @else {
+            @if (m.variableRequests().length) {
+              <div class="table-wrap">
+                <table class="recent req">
+                  <thead>
+                    <tr>
+                      <th scope="col">Descrizione</th>
+                      <th scope="col">Categoria</th>
+                      <th scope="col">Stato</th>
+                      <th scope="col" class="num">Creata il</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (r of m.variableRequests(); track r.description) {
+                      <tr>
+                        <td class="desc">{{ r.description }}</td>
+                        <td>{{ r.category }}</td>
+                        <td>
+                          <span class="req-status" [class.todo]="r.status === 'Da integrare'">
+                            <app-icon [name]="r.status === 'Da integrare' ? 'alert-circle' : 'check-circle'" [size]="14" [stroke]="2" />
+                            {{ r.status }}
+                          </span>
+                        </td>
+                        <td class="num">{{ date(r.created) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <p class="empty">Nessuna richiesta per prodotti a peso variabile.</p>
+            }
+          }
+          <div class="block-actions">
+            <button type="button" class="link-btn" (click)="notInDemo()">
+              Vedi tutte le richieste <app-icon name="arrow-right" [size]="14" [stroke]="2" />
+            </button>
+          </div>
+        </div>
+      </section>
+    }
 
     <!-- Ultimi codici censiti -->
     <section class="card block" aria-labelledby="recent-title">
@@ -451,6 +512,85 @@
         }
       </div>
     </section>
+
+    <!-- Digital Link nel dettaglio: cosa collegano i prodotti e quanto vengono scansionati. -->
+    @if (m.dl().withDl) {
+      <section class="card block" aria-labelledby="dl-detail-title">
+        <h2 id="dl-detail-title" class="block-title">GS1 Digital Link nel dettaglio</h2>
+        <div class="dl-detail">
+          <div>
+            <h3 class="detail-title">Contenuti collegati</h3>
+            <p class="detail-sub">Sui {{ plural(m.dl().withDl, 'prodotto', 'prodotti') }} con Digital Link</p>
+            <ul class="meter-list">
+              @for (c of m.dl().contents; track c.label) {
+                <li>
+                  <span class="ml-name">{{ c.label }}</span>
+                  <span class="ml-n">{{ num(c.count) }} su {{ num(m.dl().withDl) }}</span>
+                  <app-meter class="ml-bar" [label]="c.label + ' tra i prodotti con Digital Link'" [value]="c.count" [max]="m.dl().withDl" [size]="8" />
+                </li>
+              }
+            </ul>
+          </div>
+          <div>
+            <h3 class="detail-title">Scansioni del QR code</h3>
+            @if (m.stats(); as s) {
+              <p class="detail-sub">Ultimi 30 giorni</p>
+              <p class="scan-figure">
+                <strong>{{ num(s.total) }}</strong>
+                <span class="delta" [class.down]="s.deltaPct < 0">
+                  {{ s.deltaPct > 0 ? '▲ +' : '▼ ' }}{{ s.deltaPct }}% sui 30 giorni precedenti
+                </span>
+              </p>
+              <app-sparkline
+                [values]="s.daily"
+                [end]="s.end"
+                [label]="'Scansioni giornaliere negli ultimi 30 giorni: totale ' + num(s.total) + ', ultimo giorno ' + s.daily[s.daily.length - 1]"
+              />
+              <p class="scan-top">Più letto: {{ s.topDescription }} ({{ num(s.topScans) }} scansioni)</p>
+            } @else {
+              <div class="soon">
+                <app-icon name="qrcode" [size]="28" [stroke]="1.6" />
+                <p>
+                  <strong>In arrivo</strong>
+                  Qui vedrai quante volte vengono inquadrati i tuoi QR code e quali prodotti sono i più letti.
+                </p>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- Completezza delle schede: ex "Livello riempimento attributi", ordinata dal meno compilato. -->
+    @if (m.products().total) {
+      <section class="card block" aria-labelledby="quality-title">
+        <h2 id="quality-title" class="block-title">Completezza delle schede prodotto</h2>
+        <p class="block-sub">
+          Quanti dei tuoi {{ plural(m.products().total, 'prodotto a peso fisso', 'prodotti a peso fisso') }} hanno ogni dato
+          compilato. In cima quelli da completare.
+        </p>
+        <ul class="quality">
+          @for (a of m.attributes(); track a.label) {
+            <li>
+              <span class="q-name">{{ a.label }}</span>
+              <app-meter class="q-bar" [label]="a.label + ' compilato'" [value]="a.filled" [max]="a.total" [size]="10" />
+              <span class="q-val"><strong>{{ pct(a.share) }}</strong> {{ num(a.filled) }} su {{ num(a.total) }}</span>
+            </li>
+          }
+        </ul>
+        @if (m.attributes()[0]; as low) {
+          @if (low.share < 0.5) {
+            <p class="quality-hint">
+              <app-icon name="bulb" [size]="18" [stroke]="1.9" />
+              <span>
+                <strong>{{ low.label }}</strong> manca su {{ plural(low.total - low.filled, 'prodotto', 'prodotti') }}. {{ low.why }}
+                <a routerLink="/prodotti" [queryParams]="{ completa: low.label.toLowerCase() }">Vedi i prodotti da completare</a>
+              </span>
+            </p>
+          }
+        }
+      </section>
+    }
   </div>
 
   <aside class="side-col" aria-label="Azienda, accesso rapido e risorse">

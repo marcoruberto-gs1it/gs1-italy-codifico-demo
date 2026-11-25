@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, Injector, afterNextRend
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { GLN_TYPE_INFO, REGISTRY_INFO, parseScenario } from '../../core/dashboard-data';
+import { Meter, Part, SegmentedBar, Sparkline, VIZ } from '../../ui/charts';
 import { HelpPanel } from '../../ui/help-panel';
 import { Icon } from '../../ui/icon';
 import { ProductActionsMenu } from '../../ui/product-actions-menu';
@@ -12,6 +13,7 @@ import { CatalogRow, DashboardModel } from './dashboard-model';
 import { LinkProductDialog } from './link-product-dialog';
 
 type RecentTab = 'fixed' | 'variable' | 'gln';
+type RequestTab = 'changes' | 'variable';
 
 const DEMO_ONLY = 'Nella demo sono consultabili i prodotti con l’etichetta “Demo”';
 /** Utente della demo: lo stato "Riduci" del banner si salva per utente. */
@@ -26,7 +28,18 @@ const USER_KEY = 'mario.rossi';
  */
 @Component({
   selector: 'app-dashboard-page',
-  imports: [RouterLink, Icon, Tip, ProductActionsMenu, TutorialModal, HelpPanel, LinkProductDialog],
+  imports: [
+    RouterLink,
+    Icon,
+    Tip,
+    ProductActionsMenu,
+    TutorialModal,
+    HelpPanel,
+    LinkProductDialog,
+    SegmentedBar,
+    Meter,
+    Sparkline,
+  ],
   providers: [DashboardModel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard-page.html',
@@ -47,14 +60,32 @@ export class DashboardPage {
   protected tutorialOpen = signal(false);
   protected pickerOpen = signal(false);
   protected howOpen = signal(false);
-  protected contentsOpen = signal(false);
   protected tab = signal<RecentTab>('fixed');
+  protected reqTab = signal<RequestTab>('changes');
+
+  /** Tab delle richieste, con i conteggi nell'etichetta. */
+  protected reqTabs = computed(() => [
+    { id: 'changes' as const, label: 'Richieste di modifica', count: this.m.changeRequests().length },
+    { id: 'variable' as const, label: 'Prodotti a peso variabile', count: this.m.variableRequests().length },
+  ]);
 
   protected readonly tabs: { id: RecentTab; label: string }[] = [
     { id: 'fixed', label: 'Prodotti a peso fisso' },
     { id: 'variable', label: 'Prodotti a peso variabile' },
     { id: 'gln', label: 'GLN' },
   ];
+
+  /** Prodotti per stato, per la barra segmentata della card Prodotti. */
+  protected productParts = computed<Part[]>(() => [
+    { label: 'Finalizzati', value: this.m.products().total - this.m.products().drafts, color: VIZ.s1 },
+    { label: 'In bozza', value: this.m.products().drafts, color: VIZ.s2 },
+  ]);
+
+  /** GLN per tipo, nell'ordine fisso della palette. */
+  protected glnParts = computed<Part[]>(() => {
+    const colors = [VIZ.s1, VIZ.s2, VIZ.s3];
+    return this.m.glnSummary().byType.map((t, i) => ({ label: t.type, value: t.count, color: colors[i] }));
+  });
 
   /** Un solo annuncio alla volta: benvenuto senza prodotti finalizzati, altrimenti il Digital Link. */
   protected banner = computed<'welcome' | 'dl'>(() => (this.m.dl().scope === 0 ? 'welcome' : 'dl'));
@@ -103,15 +134,36 @@ export class DashboardPage {
   /* ---- Ultimi codici censiti ---- */
 
   protected onTabKey(event: KeyboardEvent): void {
+    const next = this.nextTab(event, this.tabs.map((t) => t.id), this.tab());
+    if (next) this.selectTab(next, 'tab-', (id) => this.tab.set(id));
+  }
+
+  protected onReqTabKey(event: KeyboardEvent): void {
+    const next = this.nextTab(event, this.reqTabs().map((t) => t.id), this.reqTab());
+    if (next) this.selectTab(next, 'reqtab-', (id) => this.reqTab.set(id));
+  }
+
+  /** Frecce, Home e Fine fra le tab (pattern ARIA delle tab con attivazione automatica). */
+  private nextTab<T extends string>(event: KeyboardEvent, ids: T[], current: T): T | null {
     const keys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
-    if (!keys.includes(event.key)) return;
+    if (!keys.includes(event.key)) return null;
     event.preventDefault();
-    const ids = this.tabs.map((t) => t.id);
-    const i = ids.indexOf(this.tab());
-    const next =
-      event.key === 'Home' ? 0 : event.key === 'End' ? ids.length - 1 : (i + (event.key === 'ArrowRight' ? 1 : -1) + ids.length) % ids.length;
-    this.tab.set(ids[next]);
-    this.host.nativeElement.querySelector<HTMLElement>(`#tab-${ids[next]}`)?.focus();
+    const i = ids.indexOf(current);
+    const n = ids.length;
+    const j = event.key === 'Home' ? 0 : event.key === 'End' ? n - 1 : (i + (event.key === 'ArrowRight' ? 1 : -1) + n) % n;
+    return ids[j];
+  }
+
+  private selectTab<T extends string>(id: T, prefix: string, set: (id: T) => void): void {
+    set(id);
+    this.host.nativeElement.querySelector<HTMLElement>(`#${prefix}${id}`)?.focus();
+  }
+
+  /** Apre la scheda di un GTIN: solo i prodotti della demo hanno una scheda. */
+  protected openGtin(gtin: string): void {
+    const row = this.m.catalog().find((c) => c.gtin === gtin);
+    if (row) this.openProduct(row);
+    else this.toasts.show(DEMO_ONLY, 'info');
   }
 
   protected openProduct(row: CatalogRow): void {
@@ -148,6 +200,11 @@ export class DashboardPage {
   protected date(iso: string): string {
     const [y, m, d] = iso.split('-');
     return `${d}/${m}/${y}`;
+  }
+
+  protected dateTime(iso: string): string {
+    const [day, time] = iso.split('T');
+    return `${this.date(day)} ${time}`;
   }
 
   protected plural(n: number, one: string, many: string): string {
